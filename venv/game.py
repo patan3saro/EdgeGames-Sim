@@ -45,7 +45,7 @@ class Game:
     def generate_configs(self, max_config_number=15, type_slot='min', years_horizon=3):
         # available time horizons
         configurations = []
-        one_year_minutes =30 # 525600
+        one_year_minutes = 5 # 525600
         one_year_seconds = 3.154e+7
         T_horizon_avail = []
         if type_slot == "sec":
@@ -94,7 +94,8 @@ class Game:
 
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
-        tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
+        # WARNING: randomness generates problems with the optimization
+        tmp = 50 # np.random.randint(eta - sigma/2, eta + sigma/2)
         return tmp
 
     def _player_utility_t(self, resources, player_type):
@@ -106,8 +107,8 @@ class Game:
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 300/1.2
-            sigma = 8
+            eta = 300
+            sigma = 80
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
@@ -117,8 +118,8 @@ class Game:
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 300/1.1
-            sigma = 10
+            eta = 200
+            sigma = 50
             load = self._generate_load(eta, sigma)
         return self._f(resources, a) * self._g(load)
 
@@ -154,9 +155,8 @@ class Game:
         x0=[1000, 500, 500]
         b=(1, None)
         #I bound the capacity: first item in tuple
-        bnds=((0, 100000),b,b)
+        bnds=((0, None),b,b)
         sol = minimize(self.coal_payoff_objective_function, x0 , bounds=bnds, method='SLSQP', constraints=cons)
-        #print(sol)
         return sol
 
     # GETTERS AND SETTERS

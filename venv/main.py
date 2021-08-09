@@ -51,7 +51,6 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
                 best_coalition=info_dict
                 max_payoff=coal_payoff
             infos_all_coal_one_config.append(info_dict)
-            print(info_dict)
             if(game.is_convex(infos_all_coal_one_config)):
                 print("Shapley value is in the core\n")
         #properties_list = verify_properties()

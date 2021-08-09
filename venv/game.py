@@ -169,9 +169,11 @@ class Game:
             for j in (range(i+1, len(coalitions_infos))):
                 coal1=coalitions_infos[i]["coalition"]
                 coal2=coalitions_infos[j]["coalition"]
+                coal1_value=coalitions_infos[i]["coalitional_payoff"]
+                coal2_value=coalitions_infos[j]["coalitional_payoff"]
                 # searching for the union and intersection coalition
-                union=set(coal1).union(coal2)
-                intersection=set(coal1).intersection(coal2)
+                union=tuple(set(coal1).union(coal2))
+                intersection=tuple(set(coal1).intersection(coal2))
                 #print("AAAAAAAAAA", union, intersection)
 
                 if (0, 'NO') not in union:
@@ -183,10 +185,16 @@ class Game:
                     elif (0,'NO') in intersection:
                             #search intersection
                             for k in coalitions_infos:
-                                if(coalitions_infos[k]["coalition"]==intersection):
-                                    intersection_value=coalitions_infos[k]["coalitional_payoff"]
-                                if(coalitions_infos[k]["coalition"]==union):
-                                    union_value=coalitions_infos[k]["coalitional_payoff"]
+                                if(k["coalition"]==intersection):
+                                    intersection_value=k["coalitional_payoff"]
+                                if(k["coalition"]==union):
+                                    union_value=k["coalitional_payoff"]
+                                    if(union_value>=coal1_value+coal2_value-intersection_value):
+                                        convexity.append(True)
+                                    else:
+                                        convexity.append(False)
+        print(False not in convexity)
+        return False not in convexity
 
                 #for item in coalitions_infos:
 

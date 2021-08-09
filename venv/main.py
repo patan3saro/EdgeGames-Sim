@@ -4,7 +4,7 @@ from game import Game
 
 #by default player 0 is the NO
 #Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
+def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t="min"):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)
@@ -38,10 +38,10 @@ def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slo
             #print(coal_payoff)
             optimal_decision = sol['x']
             info_dict = {"configuration": {
-                "cpu price/mCore": configuration[0],
+                "cpu_price_mCore": configuration[0],
                 "horizon": configuration[1]
             }, "coalition": coalition,
-                         "coalitional payoff": coal_payoff,"optimal variables": {
+                         "coalitional_payoff": coal_payoff,"optimal_variables": {
                     "capacity": optimal_decision[0],
                     "resources1": optimal_decision[1],
                     "resources2": optimal_decision[2]
@@ -51,14 +51,17 @@ def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slo
                 best_coalition=info_dict
                 max_payoff=coal_payoff
             infos_all_coal_one_config.append(info_dict)
+            print(info_dict)
+            if(game.is_convex(infos_all_coal_one_config)):
+                print("Shapley value is in the core\n")
         #properties_list = verify_properties()
         #print(infos_all_coal_one_config[0])
-        tmp_payoff=best_coalition["coalitional payoff"]
+        tmp_payoff=best_coalition["coalitional_payoff"]
         if tmp_payoff > best_max_payoff:
             best_of_the_best_coal = best_coalition
             best_max_payoff = tmp_payoff
     import json
-    print(json.dumps(best_of_the_best_coal, indent=4))
+    #print(json.dumps(best_of_the_best_coal, indent=4))
 
 if __name__=='__main__':
     #players_number=int(input("Insert players' number"))

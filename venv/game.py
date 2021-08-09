@@ -3,7 +3,6 @@ from itertools import chain, combinations
 from scipy.optimize._minimize import minimize
 import numpy as np
 
-
 class Game:
 
     def _all_permutations(self, iterable):
@@ -37,7 +36,7 @@ class Game:
         for perm in perms[2:]:
             if 0 in perm[0]:
                 feasible_perms.append(perm)
-        return feasible_perms
+        return perms
 
     # we can provide the number of config to try
     # inputs: type of slots, it can be seconds or minutes
@@ -159,8 +158,39 @@ class Game:
         sol = minimize(self.coal_payoff_objective_function, x0 , bounds=bnds, method='SLSQP', constraints=cons)
         return sol
 
-    # GETTERS AND SETTERS
+    #Checking properties
 
+
+    # Combinatory analisys => N*(N-1)/2
+    #Valid only if we consider the coalition with NO
+    def is_convex(self, coalitions_infos):
+        convexity=[]
+        for i in range(len(coalitions_infos)):
+            for j in (range(i+1, len(coalitions_infos))):
+                coal1=coalitions_infos[i]["coalition"]
+                coal2=coalitions_infos[j]["coalition"]
+                # searching for the union and intersection coalition
+                union=set(coal1).union(coal2)
+                intersection=set(coal1).intersection(coal2)
+                #print("AAAAAAAAAA", union, intersection)
+
+                if (0, 'NO') not in union:
+                    convexity.append(True)
+                else:
+                    # empty intersection or with no NO
+                    if (0,'NO') not in intersection:
+                        intersection_value=0
+                    elif (0,'NO') in intersection:
+                            #search intersection
+                            for k in coalitions_infos:
+                                if(coalitions_infos[k]["coalition"]==intersection):
+                                    intersection_value=coalitions_infos[k]["coalitional_payoff"]
+                                if(coalitions_infos[k]["coalition"]==union):
+                                    union_value=coalitions_infos[k]["coalitional_payoff"]
+
+                #for item in coalitions_infos:
+
+    # GETTERS AND SETTERS
     # to get parameters like p_cpu, coalition etc
     def get_params(self):
         return self.params

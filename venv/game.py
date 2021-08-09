@@ -131,6 +131,10 @@ class Game:
         capacity = x[0]
         resources = x[1:]
         tot_utility = 0
+        #if the network operator is not in the coalition or It is alone
+        if (0, 'NO') not in coalition or ((0, 'NO'), )==coalition :
+            return 0
+
         # we calculate utility function at t for a player only for SPs
         # coalition is a tuple that specify the type of player also
         for player in coalition[1:]:
@@ -141,6 +145,7 @@ class Game:
                 utility_time_sum = utility_time_sum + self._player_utility_t(resources[player[0]-1], player_type)
             tot_utility = tot_utility + utility_time_sum
         #we use minimize function, so to maximize we minimize the opposite
+
         return -(tot_utility - p_cpu * capacity)
 
     # OPTIMIZATION
@@ -193,11 +198,33 @@ class Game:
                                         convexity.append(True)
                                     else:
                                         convexity.append(False)
-        print(False not in convexity)
         return False not in convexity
 
-                #for item in coalitions_infos:
+    def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions):
+        coalition_players_number=len(best_coalition)
+        x_payoffs=[]
+        N_factorial=math.factorial(players_number)
+        for player in best_coalition["coalition"]:
+            for coalition_dict in infos_all_coal_one_config:
+                coalitions_dict_without_i=[]
+                coalitions_dict_with_i=[]
 
+                if player not in coalition_dict["coalition"]:
+                    coalitions_dict_without_i.append(coalition_dict)
+                else:
+                    coalitions_dict_with_i.append(coalition_dict)
+                summation = 0
+                for S in coalitions_dict_without_i:
+                    for l in coalitions_dict_with_i:
+                        print(coalitions_dict_without_i)
+                        if tuple(set(S["coalition"]).intersection(l["coalition"]))==player:
+                            contribution = l["coalitional_payoff"] - S["coalitional_payoff"]
+                            print(contribution)
+                        tmp=math.factorial(len(S["coalition"]))*math.factorial(players_number-len(S["coalition"])-1)*contribution
+                        summation = summation + tmp
+            x_payoffs.append((1/N_factorial)*summation)
+
+        return x_payoffs
     # GETTERS AND SETTERS
     # to get parameters like p_cpu, coalition etc
     def get_params(self):

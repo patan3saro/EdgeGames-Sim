@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from game import Game
+import json
 
 #by default player 0 is the NO
 #Players number is mandatory
@@ -26,7 +27,8 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
         best_coalition={}
         max_payoff=0
         p_cpu, T_horizon= configuration
-        for coalition in coalitions:
+        #we exclude the empty coalition
+        for coalition in coalitions[1:]:
             #preparing parameters to calculate payoff
             params = (p_cpu, T_horizon, coalition)
             game.set_params(params)
@@ -51,15 +53,21 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
                 best_coalition=info_dict
                 max_payoff=coal_payoff
             infos_all_coal_one_config.append(info_dict)
-            if(game.is_convex(infos_all_coal_one_config)):
-                print("Shapley value is in the core\n")
+        print("Checking if the game is convex...\n")
+        if (game.is_convex(infos_all_coal_one_config)):
+            print("The game is convex!\n")
+            players_payoffs=game.shapley_value_payoffs(best_coalition, infos_all_coal_one_config, players_number, coalitions)
+            print("Shapley value is in the core:", players_payoffs,"\n")
+        else:
+            print("The game is not convex!\n")
+
         #properties_list = verify_properties()
         #print(infos_all_coal_one_config[0])
         tmp_payoff=best_coalition["coalitional_payoff"]
         if tmp_payoff > best_max_payoff:
             best_of_the_best_coal = best_coalition
             best_max_payoff = tmp_payoff
-    import json
+
     #print(json.dumps(best_of_the_best_coal, indent=4))
 
 if __name__=='__main__':

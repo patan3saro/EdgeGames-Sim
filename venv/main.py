@@ -39,16 +39,13 @@ def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=None, 
             #remember that we minimize so maximum is the opposite
             coal_payoff= - sol['fun']
             #print(coal_payoff)
-            optimal_decision = sol['x']
+            optimal_decision =tuple(sol['x'])
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration[0],
                 "horizon": configuration[1]
             }, "coalition": coalition,
-                         "coalitional_payoff": coal_payoff,"optimal_variables": {
-                    "capacity": optimal_decision[0],
-                    "resources1": optimal_decision[1],
-                    "resources2": optimal_decision[2]
-                }}
+                         "coalitional_payoff": coal_payoff,
+                "optimal_variables": optimal_decision}
             #keeping the best coalition for a given configuration
             if coal_payoff > max_payoff:
                 best_coalition=info_dict

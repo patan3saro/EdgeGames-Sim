@@ -44,7 +44,7 @@ class Game:
     def generate_configs(self, max_config_number=15, type_slot='min', years_horizon=3):
         # available time horizons
         configurations = []
-        one_year_minutes = 5 # 525600
+        one_year_minutes = 525600
         one_year_seconds = 3.154e+7
         T_horizon_avail = []
         if type_slot == "sec":
@@ -97,7 +97,7 @@ class Game:
         tmp = 50 # np.random.randint(eta - sigma/2, eta + sigma/2)
         return tmp
 
-    def _player_utility_t(self, resources, player_type):
+    def _1_player_utility_t(self, resources, player_type):
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # gets a great benefit from resources at the edge with this a
@@ -122,18 +122,59 @@ class Game:
             load = self._generate_load(eta, sigma)
         return self._f(resources, a) * self._g(load)
 
+    def _2_player_utility_t(self, resources, player_type):
+        # if a real time SP, e.g. Peugeot
+        if player_type == "rt":
+            #used to convert load in mCore
+            conversion_factor=20
+            # gets a great benefit from resources at the edge with this a
+            a = 10
+            #we must generate a load that is comparable
+            # with the curve of the load benefit _g
+            #e.g. choose eta=height_of_g/1.2
+            # eta and sigma must be positive and eta >= sigma/2
+            eta = 300
+            sigma = 80
+            load = self._generate_load(eta, sigma)
+        # if not real time SP, e.g. Netflix
+        else:
+            #used to convert load in mCore
+            conversion_factor=5
+            # gets less benefit
+            a = 4
+            #we must generate a load that is comparable
+            # with the curve of the load benefit _g
+            #e.g. choose eta=height_of_g/1.1
+            # eta and sigma must be positive and eta >= sigma/2
+            eta = 200
+            sigma = 50
+            load = self._generate_load(eta, sigma)
+        #benefit factor dollars per mCore per minute
+        #see: https://edge.network/en/pricing/
+        beta=0.007/(60*4000)
+        #converting load in needed resources
+        converted_load= load*conversion_factor
+        #the utility saturate if converted load>resources
+        variable=min(converted_load, resources)
+        return beta*conversion_factor*variable
+
+
     # to calculate the coalitional utility we simulate intervals
 
     def coal_payoff_objective_function(self, x):
         #I get in this way the parameters because the signature of
         # the objective func must be like this
-        p_cpu, T_horizon, coalition = self.get_params()[:3]
+        p_cpu, T_horizon, coalition, _ , simulation_type = self.get_params()
         capacity = x[0]
         resources = x[1:]
         tot_utility = 0
         #if the network operator is not in the coalition or It is alone
         if (0, 'NO') not in coalition or ((0, 'NO'), )==coalition :
             return 0
+        if simulation_type=="real":
+            utility_f = self._2_player_utility_t
+        else:
+            utility_f = self._1_player_utility_t
 
         # we calculate utility function at t for a player only for SPs
         # coalition is a tuple that specify the type of player also
@@ -142,7 +183,7 @@ class Game:
             for t in range(T_horizon):
                 # remember that resources is a vector
                 player_type = player[1]
-                utility_time_sum = utility_time_sum + self._player_utility_t(resources[player[0]-1], player_type)
+                utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
             tot_utility = tot_utility + utility_time_sum
         #we use minimize function, so to maximize we minimize the opposite
 

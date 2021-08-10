@@ -180,13 +180,14 @@ class Game:
         # coalition is a tuple that specify the type of player also
         for player in coalition[1:]:
             utility_time_sum = 0
-            for t in range(T_horizon):
+            player_type = player[1]
+            #WARNING: correct this multiplication with and explain why you deleted loop!
+            #for t in range(T_horizon):
                 # remember that resources is a vector
-                player_type = player[1]
-                utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
+                #utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
+            utility_time_sum=525600*utility_f(resources[player[0]-1], player_type)*3
             tot_utility = tot_utility + utility_time_sum
         #we use minimize function, so to maximize we minimize the opposite
-
         return -(tot_utility - p_cpu * capacity)
 
     # OPTIMIZATION
@@ -241,9 +242,10 @@ class Game:
                                 if(k["coalition"]==union):
                                     union_value=k["coalitional_payoff"]
                                     #round values for the comparison
-                                    if(round(union_value)>=round(coal1_value+coal2_value-intersection_value)):
+                                    if(math.ceil(union_value)>= coal1_value + coal2_value - intersection_value):
                                         convexity.append(True)
                                     else:
+                                        print(union_value-(coal1_value+coal2_value-intersection_value))
                                         convexity.append(False)
 
         return False not in convexity

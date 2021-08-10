@@ -199,10 +199,12 @@ class Game:
                                     intersection_value=k["coalitional_payoff"]
                                 if(k["coalition"]==union):
                                     union_value=k["coalitional_payoff"]
-                                    if(union_value>=coal1_value+coal2_value-intersection_value):
+                                    #round values for the comparison
+                                    if(round(union_value)>=round(coal1_value+coal2_value-intersection_value)):
                                         convexity.append(True)
                                     else:
                                         convexity.append(False)
+
         return False not in convexity
 
     def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions):

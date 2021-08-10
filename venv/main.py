@@ -5,7 +5,7 @@ import json
 
 #by default player 0 is the NO
 #Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
+def main(players_number=5, rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)
@@ -31,7 +31,7 @@ def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slo
         #we exclude the empty coalition
         for coalition in coalitions[1:]:
             #preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition)
+            params = (p_cpu, T_horizon, coalition, players_number)
             game.set_params(params)
             #total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
@@ -39,16 +39,14 @@ def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slo
             #remember that we minimize so maximum is the opposite
             coal_payoff= - sol['fun']
             #print(coal_payoff)
-            optimal_decision = sol['x']
+            optimal_decision = tuple(sol['x'])
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration[0],
                 "horizon": configuration[1]
             }, "coalition": coalition,
-                         "coalitional_payoff": coal_payoff,"optimal_variables": {
-                    "capacity": optimal_decision[0],
-                    "resources1": optimal_decision[1],
-                    "resources2": optimal_decision[2]
-                }}
+                "coalitional_payoff": coal_payoff,
+                "optimal_variables": optimal_decision
+                }
             #keeping the best coalition for a given configuration
             if coal_payoff > max_payoff:
                 best_coalition=info_dict
@@ -81,8 +79,6 @@ def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slo
             print((sum(players_payoffs)-best_of_the_best_coal["coalitional_payoff"]))
     else:
         print("The game is not convex!\n")
-    print(infos_all_coal_one_config)
 
 if __name__=='__main__':
-    #players_number=int(input("Insert players' number"))
     main()

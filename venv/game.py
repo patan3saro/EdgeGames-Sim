@@ -63,7 +63,7 @@ class Game:
         for u, v in gen:
             configurations.append((u, v))
         # we return the maximum number allowed of configs
-        #SISTEMA QUESTA COSA CONSIDERANDO CHE POI GLI USERS POSSONO INSERIRLA!!!!
+        #Warning: SISTEMA QUESTA COSA CONSIDERANDO CHE POI GLI USERS POSSONO INSERIRLA!!!!
         return configurations[:min(max_config_number,len(configurations))]
 
     # useful functions to create the utility at time t for each player
@@ -127,7 +127,7 @@ class Game:
     def coal_payoff_objective_function(self, x):
         #I get in this way the parameters because the signature of
         # the objective func must be like this
-        p_cpu, T_horizon, coalition = self.get_params()
+        p_cpu, T_horizon, coalition = self.get_params()[:3]
         capacity = x[0]
         resources = x[1:]
         tot_utility = 0
@@ -150,16 +150,22 @@ class Game:
 
     # OPTIMIZATION
     def constraint1(self, x):
-        return x[0] - x[1] - x[2]
+        players_number=self.get_params()[3]
+        eq=x[0]
+        for i in range(players_number-1):
+            eq-=x[i+1]
+        return  eq
 
     # max payoff computation
     def calculate_coal_payoff(self):
         con1 = {'type': 'eq', 'fun': self.constraint1}
         cons = [con1]
-        x0=[1000, 500, 500]
-        b=(1, None)
+        players_number = self.get_params()[3]
+        x0=[1000]
+        for i in range(players_number-1):
+            x0.append(x0[0]/players_number)
         #I bound the capacity: first item in tuple
-        bnds=((0, None),b,b)
+        bnds = ((0, None),) * players_number
         sol = minimize(self.coal_payoff_objective_function, x0 , bounds=bnds, method='SLSQP', constraints=cons)
         return sol
 
@@ -179,7 +185,6 @@ class Game:
                 # searching for the union and intersection coalition
                 union=tuple(set(coal1).union(coal2))
                 intersection=tuple(set(coal1).intersection(coal2))
-                #print("AAAAAAAAAA", union, intersection)
 
                 if (0, 'NO') not in union:
                     convexity.append(True)
@@ -223,7 +228,7 @@ class Game:
 
         return x_payoffs
     # GETTERS AND SETTERS
-    # to get parameters like p_cpu, coalition etc
+    # to get parameters p_cpu, T_horizon, coalition, players_number
     def get_params(self):
         return self.params
 

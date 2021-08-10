@@ -5,7 +5,7 @@ import json
 
 #by default player 0 is the NO
 #Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t="min"):
+def main(players_number=3, rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)
@@ -22,10 +22,11 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
     # all the coalition for all the configurations
     best_of_the_best_coal={}
     best_max_payoff=0
+    all_infos=[]
     for configuration in configurations:
         infos_all_coal_one_config=[]
         best_coalition={}
-        max_payoff=0
+        max_payoff=-0.1
         p_cpu, T_horizon= configuration
         #we exclude the empty coalition
         for coalition in coalitions[1:]:
@@ -53,29 +54,34 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
                 best_coalition=info_dict
                 max_payoff=coal_payoff
             infos_all_coal_one_config.append(info_dict)
-        print("Checking if the game is convex...\n")
-        if (game.is_convex(infos_all_coal_one_config)):
-            print("The game is convex!\n")
-            players_payoffs=game.shapley_value_payoffs(best_coalition, infos_all_coal_one_config, players_number, coalitions)
-            print("Shapley value is in the core:", players_payoffs,"\n")
-            print("Checking if the payoff is efficient...")
-            # we don'nt consider the exact difference but a little tolerance
-            # since there are approx errors
-            if (abs(sum(players_payoffs)-best_coalition["coalitional_payoff"])<=0.5):
-                print("The payoff is efficient\n")
-            else:
-                print("The payoff is not efficient\n")
-        else:
-            print("The game is not convex!\n")
-
         #properties_list = verify_properties()
         #print(infos_all_coal_one_config[0])
+        all_infos.append(infos_all_coal_one_config)
         tmp_payoff=best_coalition["coalitional_payoff"]
         if tmp_payoff > best_max_payoff:
             best_of_the_best_coal = best_coalition
             best_max_payoff = tmp_payoff
-
-    #print(json.dumps(best_of_the_best_coal, indent=4))
+    #choosing info of all coalition for the best config
+    for elem in all_infos:
+        if best_of_the_best_coal in elem:
+            infos_all_coal_one_config=elem
+    print(json.dumps(best_of_the_best_coal, indent=4))
+    print("Checking if the game is convex...\n")
+    if (game.is_convex(infos_all_coal_one_config)):
+        print("The game is convex!\n")
+        players_payoffs=game.shapley_value_payoffs(best_of_the_best_coal, infos_all_coal_one_config, players_number, coalitions)
+        print("Shapley value is in the core:", players_payoffs,"\n")
+        print("Checking if the payoff is efficient...")
+        # we don'nt consider the exact difference but a little tolerance
+        # since there are approx errors
+        if (abs(sum(players_payoffs)-best_of_the_best_coal["coalitional_payoff"])<=0.5):
+            print("The payoff is efficient\n")
+        else:
+            print("The payoff is not efficient\n")
+            print((sum(players_payoffs)-best_of_the_best_coal["coalitional_payoff"]))
+    else:
+        print("The game is not convex!\n")
+    print(infos_all_coal_one_config)
 
 if __name__=='__main__':
     #players_number=int(input("Insert players' number"))

@@ -58,6 +58,13 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, T_horizon=1, type_slot_t
             print("The game is convex!\n")
             players_payoffs=game.shapley_value_payoffs(best_coalition, infos_all_coal_one_config, players_number, coalitions)
             print("Shapley value is in the core:", players_payoffs,"\n")
+            print("Checking if the payoff is efficient...")
+            # we don'nt consider the exact difference but a little tolerance
+            # since there are approx errors
+            if (abs(sum(players_payoffs)-best_coalition["coalitional_payoff"])<=0.5):
+                print("The payoff is efficient\n")
+            else:
+                print("The payoff is not efficient\n")
         else:
             print("The game is not convex!\n")
 

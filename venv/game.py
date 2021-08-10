@@ -204,22 +204,19 @@ class Game:
         coalition_players_number=len(best_coalition)
         x_payoffs=[]
         N_factorial=math.factorial(players_number)
-        for player in best_coalition["coalition"]:
+        for player in coalitions[-1]:
+            coalitions_dict_without_i = []
+            coalitions_dict_with_i = []
             for coalition_dict in infos_all_coal_one_config:
-                coalitions_dict_without_i=[]
-                coalitions_dict_with_i=[]
-
                 if player not in coalition_dict["coalition"]:
                     coalitions_dict_without_i.append(coalition_dict)
                 else:
                     coalitions_dict_with_i.append(coalition_dict)
-                summation = 0
-                for S in coalitions_dict_without_i:
-                    for l in coalitions_dict_with_i:
-                        print(coalitions_dict_without_i)
-                        if tuple(set(S["coalition"]).intersection(l["coalition"]))==player:
-                            contribution = l["coalitional_payoff"] - S["coalitional_payoff"]
-                            print(contribution)
+            summation = 0
+            for S in coalitions_dict_without_i:
+                for l in coalitions_dict_with_i:
+                    if tuple(set(S["coalition"]).symmetric_difference(l["coalition"]))==(player,):
+                        contribution = l["coalitional_payoff"] - S["coalitional_payoff"]
                         tmp=math.factorial(len(S["coalition"]))*math.factorial(players_number-len(S["coalition"])-1)*contribution
                         summation = summation + tmp
             x_payoffs.append((1/N_factorial)*summation)

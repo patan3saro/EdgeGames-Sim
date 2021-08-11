@@ -74,7 +74,7 @@ class Game:
         #h determines the spread of the curve
         # and we need a great spread because the number of resources
         # can be in the order of 10^3 or 10^4
-        h = 0.00001
+        h = 0.0001
         resources = min(resources, (2*a+(1/h)))
         #resources is by default > 0 thanks to the bounds in minimize function
         #so we will have always _f>=0
@@ -82,43 +82,43 @@ class Game:
 
     def _g(self, load):
         # h (height) determine the saturation value
-        h=200
+        h=50
         #this lowers the function
-        l=2
+        l=0.5
         #determines the slope og the function
         s=0.03
         #m moves to the right  if >0 else to the left the function
-        m=6
+        m=5
         return (h / (1 + math.e ** (- (load*s - m)))) - l
 
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
-        tmp = 50 # np.random.randint(eta - sigma/2, eta + sigma/2)
+        tmp = eta # np.random.randint(eta - sigma/2, eta + sigma/2)
         return tmp
 
     def _1_player_utility_t(self, resources, player_type):
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # gets a great benefit from resources at the edge with this a
-            a = 10
+            a = 0.2
             #we must generate a load that is comparable
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 300
-            sigma = 80
+            eta = 20
+            sigma = 4
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
             # gets less benefit
-            a = 4
+            a = 0.005
             #we must generate a load that is comparable
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 200
-            sigma = 50
+            eta = 14
+            sigma = 2
             load = self._generate_load(eta, sigma)
         return self._f(resources, a) * self._g(load)
 
@@ -133,7 +133,7 @@ class Game:
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 300
+            eta = 40
             sigma = 80
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix

@@ -5,7 +5,7 @@ import json
 
 #by default player 0 is the NO
 #Players number is mandatory
-def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
+def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)
@@ -21,7 +21,7 @@ def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=None, 
     # to know which is the best coalition among
     # all the coalition for all the configurations
     best_of_the_best_coal={}
-    best_max_payoff=0
+    best_max_payoff=-1
     all_infos=[]
     for configuration in configurations:
         infos_all_coal_one_config=[]

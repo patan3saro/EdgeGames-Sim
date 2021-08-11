@@ -127,8 +127,6 @@ class Game:
         if player_type == "rt":
             #used to convert load in mCore
             conversion_factor=20
-            # gets a great benefit from resources at the edge with this a
-            a = 10
             #we must generate a load that is comparable
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.2
@@ -140,8 +138,6 @@ class Game:
         else:
             #used to convert load in mCore
             conversion_factor=5
-            # gets less benefit
-            a = 4
             #we must generate a load that is comparable
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.1

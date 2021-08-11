@@ -209,9 +209,6 @@ class Game:
 
     #Checking properties
 
-
-    # Combinatory analisys => N*(N-1)/2
-    #Valid only if we consider the coalition with NO
     def is_convex(self, coalitions_infos):
         convexity=[]
         for i in range(len(coalitions_infos)):
@@ -238,10 +235,10 @@ class Game:
                                 if(k["coalition"]==union):
                                     union_value=k["coalitional_payoff"]
                                     #round values for the comparison
-                                    if(math.ceil(union_value)>= coal1_value + coal2_value - intersection_value):
+                                    if math.ceil(union_value)>= coal1_value + coal2_value - intersection_value:
                                         convexity.append(True)
                                     else:
-                                        print(union_value-(coal1_value+coal2_value-intersection_value))
+                                        print(union_value - (coal1_value + coal2_value - intersection_value))
                                         convexity.append(False)
 
         return False not in convexity

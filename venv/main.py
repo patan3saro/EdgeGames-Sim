@@ -5,7 +5,8 @@ import json
 
 #by default player 0 is the NO
 #Players number is mandatory
-def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None, T_horizon=None, type_slot_t=None):
+#simulation_type
+def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, horizon=3, type_slot_t="min"):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)
@@ -13,11 +14,17 @@ def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None,
     coalitions=game.feasible_permutations(players_number, rt_players)
     # Config manual or automatic
     #automatic --> combinatorial configurations
-    if p_cpu==None or T_horizon==None or type_slot_t==None:
-        configurations = game.generate_configs()
+    if p_cpu==None:
+        configurations = [0.05, 0.1, 0.15, 0.2, 0.25,0.3, 0.35, 0.4]
     #manual --> only one configuration
     else:
-        configurations = [(p_cpu, T_horizon)]
+        configurations = [p_cpu]
+    if type_slot_t=="min":
+        T_horizon=horizon*525600
+    elif type_slot_t=="sec":
+        T_horizon = horizon * 3.154e+7
+    else:
+        print("Type of time slot not allowed\n")
     # to know which is the best coalition among
     # all the coalition for all the configurations
     best_of_the_best_coal={}
@@ -27,7 +34,7 @@ def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None,
         infos_all_coal_one_config=[]
         best_coalition={}
         max_payoff=-0.1
-        p_cpu, T_horizon= configuration
+        p_cpu = configuration
         #we exclude the empty coalition
         for coalition in coalitions[1:]:
             #preparing parameters to calculate payoff
@@ -41,8 +48,8 @@ def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None,
             #print(coal_payoff)
             optimal_decision =tuple(sol['x'])
             info_dict = {"configuration": {
-                "cpu_price_mCore": configuration[0],
-                "horizon": round(configuration[1]/525600)
+                "cpu_price_mCore": configuration,
+                "horizon": horizon
             }, "coalition": coalition,
                          "coalitional_payoff": coal_payoff,
                 "optimal_variables": optimal_decision}

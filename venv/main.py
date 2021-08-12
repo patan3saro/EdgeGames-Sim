@@ -6,7 +6,7 @@ import json
 #by default player 0 is the NO
 #Players number is mandatory
 #simulation_type
-def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, horizon=3, type_slot_t="min"):
+def main(players_number=4, simulation_type="real", rt_players=None, p_cpu=None, horizon=3, type_slot_t="min"):
     game=Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     #each coalition element is a tuple player = (id, type)

@@ -131,7 +131,7 @@ class Game:
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 40
+            eta = 2000
             sigma = 80
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
@@ -142,7 +142,7 @@ class Game:
             # with the curve of the load benefit _g
             #e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 200
+            eta = 1000
             sigma = 50
             load = self._generate_load(eta, sigma)
         #benefit factor dollars per mCore per minute

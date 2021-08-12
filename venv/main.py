@@ -42,7 +42,7 @@ def main(players_number=3, simulation_type="reali", rt_players=None, p_cpu=None,
             optimal_decision =tuple(sol['x'])
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration[0],
-                "horizon": configuration[1]
+                "horizon": round(configuration[1]/525600)
             }, "coalition": coalition,
                          "coalitional_payoff": coal_payoff,
                 "optimal_variables": optimal_decision}

@@ -41,7 +41,7 @@ class Game:
     # we can provide the number of config to try
     # inputs: type of slots, it can be seconds or minutes
     #realistic time horizon of a cpu
-    def generate_configs(self, max_config_number=15, type_slot='min', years_horizon=3):
+    def generate_configs(self, max_config_number=23, type_slot='min', years_horizon=3):
         # available time horizons
         configurations = []
         one_year_minutes = 525600
@@ -74,22 +74,22 @@ class Game:
         #h determines the spread of the curve
         # and we need a great spread because the number of resources
         # can be in the order of 10^3 or 10^4
-        h = 0.0001
-        resources = min(resources, (2*a+(1/h)))
+        q = 0.0001
+        resources = min(resources, (2*a+(1/q)))
         #resources is by default > 0 thanks to the bounds in minimize function
         #so we will have always _f>=0
-        return (h * (a ** 2) + resources - h * (resources - a) ** 2)
+        return (q * (a ** 2) + resources - q * (resources - a) ** 2)
 
     def _g(self, load):
         # h (height) determine the saturation value
-        h=50
+        c=50
         #this lowers the function
         l=0.5
         #determines the slope og the function
         s=0.03
         #m moves to the right  if >0 else to the left the function
         m=5
-        return (h / (1 + math.e ** (- (load*s - m)))) - l
+        return (c / (1 + math.e ** (- (load*s - m)))) - l
 
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
@@ -181,7 +181,7 @@ class Game:
             #for t in range(T_horizon):
                 # remember that resources is a vector
                 #utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
-            utility_time_sum=525600*utility_f(resources[player[0]-1], player_type)*3
+            utility_time_sum=T_horizon*utility_f(resources[player[0]-1], player_type)
             tot_utility = tot_utility + utility_time_sum
         #we use minimize function, so to maximize we minimize the opposite
         return -(tot_utility - p_cpu * capacity)

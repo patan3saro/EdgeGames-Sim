@@ -77,11 +77,10 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, 
         print("Checking if the payoff is efficient...")
         # we don'nt consider the exact difference but a little tolerance
         # since there are approx errors
-        if abs(sum(players_payoffs) - best_of_the_best_coal["coalitional_payoff"]) <= 0.5:
+        if game.is_efficient():
             print("The payoff is efficient\n")
         else:
             print("The payoff is not efficient\n")
-            print((sum(players_payoffs) - best_of_the_best_coal["coalitional_payoff"]))
     else:
         print("The game is not convex!\n")
 

@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from itertools import chain, combinations
 from scipy.optimize._minimize import minimize
 
@@ -208,7 +209,23 @@ class Game:
         sol = minimize(self.coal_payoff_objective_function, x0, bounds=bnds, method='SLSQP', constraints=cons)
         return sol
 
+    def calculate_payoff_vector(self):
+        pass
+
     # Checking properties
+    def best_coalition(self, info_all_coalitions):
+        pass
+
+    def is_individually_rational(self, payoff_vector):
+        tmp = [payoff_vector[i] >= 0 for i in range(0, len(payoff_vector))]
+        return False not in tmp
+
+    def is_efficient(self, coal_payoff, payoff_vector):
+        # we consider the presence of some approximation loss
+        return abs(sum(payoff_vector) - coal_payoff) <= 0.5
+
+    def is_an_imputation(self):
+        return self.is_efficient() and self.is_individually_rational()
 
     def is_convex(self, coalitions_infos):
         convexity = []
@@ -258,9 +275,9 @@ class Game:
                     coalitions_dict_with_i.append(coalition_dict)
             summation = 0
             for S in coalitions_dict_without_i:
-                for l in coalitions_dict_with_i:
-                    if tuple(set(S["coalition"]).symmetric_difference(l["coalition"])) == (player,):
-                        contribution = l["coalitional_payoff"] - S["coalitional_payoff"]
+                for q in coalitions_dict_with_i:
+                    if tuple(set(S["coalition"]).symmetric_difference(q["coalition"])) == (player,):
+                        contribution = q["coalitional_payoff"] - S["coalitional_payoff"]
                         tmp = math.factorial(len(S["coalition"])) * math.factorial(
                             players_number - len(S["coalition"]) - 1) * contribution
                         summation = summation + tmp

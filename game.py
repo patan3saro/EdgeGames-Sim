@@ -213,6 +213,9 @@ class Game:
         # I get in this way the parameters because the signature of
         # the objective func must be like this
         _, T_horizon, coalition, _, simulation_type = self.get_params()
+        if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
+            print(coalition)
+            return 0
         tot_utility = 0
         # if the network operator is not in the coalition or It is alone
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
@@ -296,23 +299,19 @@ class Game:
                 if (0, 'NO') not in union:
                     convexity.append(True)
                 else:
-                    # empty intersection or with no NO
-                    if (0, 'NO') not in intersection:
-                        intersection_value = 0
-                    elif (0, 'NO') in intersection:
-                        # search intersection
-                        for k in coalitions_infos:
-                            if k["coalition"] == intersection:
-                                intersection_value = k[tmp]
-                            if k["coalition"] == union:
-                                union_value = k[tmp]
-                                # round values for the comparison
-                                if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
-                                    convexity.append(True)
-                                else:
-                                    print()
-                                    print(union_value - (coal1_value + coal2_value - intersection_value))
-                                    convexity.append(False)
+                    for k in coalitions_infos:
+                        if k["coalition"] == intersection:
+                            intersection_value = k[tmp]
+                        if k["coalition"] == union:
+                            union_value = k[tmp]
+                    # round values for the comparison
+                    if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
+                        convexity.append(True)
+                    else:
+                        #print(union, union_value)
+                        #print(intersection, intersection_value)
+                        #print(union_value - (coal1_value + coal2_value - intersection_value))
+                        convexity.append(False)
 
         return False not in convexity
 
@@ -345,6 +344,7 @@ class Game:
             x_payoffs.append((1 / N_factorial) * summation)
 
         return x_payoffs
+
     def how_much_must_pay(self, a):
         difference = []
         zip_object = zip(a[1], a[0])
@@ -352,7 +352,6 @@ class Game:
             difference.append(list1_i - list2_i)
 
         return difference
-
 
     # GETTERS AND SETTERS
     # to get parameters p_cpu, T_horizon, coalition, players_number

@@ -5,7 +5,7 @@ import json
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=0.004, horizon=3, type_slot_t="min"):
+def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004, horizon=3, type_slot_t="min"):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -35,7 +35,7 @@ def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=0.004,
         max_payoff = -0.1
         p_cpu = configuration
         # we exclude the empty coalition
-        for coalition in coalitions[1:]:
+        for coalition in coalitions:
             # preparing parameters to calculate payoff
             params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type)
             game.set_params(params)

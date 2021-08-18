@@ -5,7 +5,7 @@ import json
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, horizon=3, type_slot_t="min"):
+def main(players_number=5, simulation_type="real", rt_players=None, p_cpu=0.004, horizon=3, type_slot_t="min"):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -28,6 +28,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, 
     best_of_the_best_coal = {}
     best_max_payoff = -1
     all_infos = []
+    game_type = ("first", "second")
     for configuration in configurations:
         infos_all_coal_one_config = []
         best_coalition = {}
@@ -43,23 +44,26 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, 
             # we store payoffs and the values that optimize the total coalition's payoff
             # remember that we minimize so maximum is the opposite
             coal_payoff = - sol['fun']
-            # print(coal_payoff)
+            # computation of the payoff_vector
+            payoffs_vector = game.calculate_payoff_vector(coal_payoff, coalition, players_number)
             optimal_decision = tuple(sol['x'])
+            coal_payoff_second_game = game.calculate_coal_payoff_second_game(optimal_decision)
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
             }, "coalition": coalition,
                 "coalitional_payoff": coal_payoff,
-                "optimal_variables": optimal_decision}
+                "second_game_coalitional_payoff": coal_payoff_second_game,
+                "optimal_variables": optimal_decision,
+                "payoffs_vector": payoffs_vector
+            }
             # keeping the best coalition for a given configuration
-            if coal_payoff > max_payoff:
-                best_coalition = info_dict
-                max_payoff = coal_payoff
             infos_all_coal_one_config.append(info_dict)
-        # properties_list = verify_properties()
-        # print(infos_all_coal_one_config[0])
+
+        best_coalition = game.best_coalition(infos_all_coal_one_config)
         all_infos.append(infos_all_coal_one_config)
         tmp_payoff = best_coalition["coalitional_payoff"]
+
         if tmp_payoff > best_max_payoff:
             best_of_the_best_coal = best_coalition
             best_max_payoff = tmp_payoff
@@ -68,21 +72,27 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=None, 
         if best_of_the_best_coal in elem:
             infos_all_coal_one_config = elem
     print(json.dumps(best_of_the_best_coal, indent=4))
-    print("Checking if the game is convex...\n")
-    if game.is_convex(infos_all_coal_one_config):
-        print("The game is convex!\n")
-        players_payoffs = game.shapley_value_payoffs(best_of_the_best_coal, infos_all_coal_one_config, players_number,
-                                                     coalitions)
-        print("Shapley value is in the core:", players_payoffs, "\n")
-        print("Checking if the payoff is efficient...")
-        # we don'nt consider the exact difference but a little tolerance
-        # since there are approx errors
-        if game.is_efficient():
-            print("The payoff is efficient\n")
+    games_payoff_vectors = []
+    for q in game_type:
+        print("Checking if the", q, "game is convex...\n")
+        if game.is_convex(infos_all_coal_one_config, q):
+            print("The", q, "game is convex!\n")
+            players_payoffs = game.shapley_value_payoffs(best_of_the_best_coal, infos_all_coal_one_config,
+                                                         players_number,
+                                                         coalitions, q)
+            games_payoff_vectors.append(players_payoffs)
+            print("Shapley value is in the core:", players_payoffs, "\n")
+            print("Checking if the payoff is efficient...")
+            # we don'nt consider the exact difference but a little tolerance
+            # since there are approx errors
+            # if game.is_efficient():
+            #    print("The payoff is efficient\n")
+            # else:
+            #    print("The payoff is not efficient\n")
         else:
-            print("The payoff is not efficient\n")
-    else:
-        print("The game is not convex!\n")
+            print("The game is not convex!\n")
+    print("Each player pay:\n")
+    print(game.how_much_must_pay(games_payoff_vectors))
 
 
 if __name__ == '__main__':

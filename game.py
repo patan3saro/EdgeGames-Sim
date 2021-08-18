@@ -1,43 +1,10 @@
 import math
 import numpy as np
-from itertools import chain, combinations
 from scipy.optimize._minimize import minimize
+import utils
 
 
 class Game:
-
-    def _all_permutations(self, iterable):
-        "all_permutation([0,1,2]) --> () (0,) (1,) (2,) (0,1) (0,2) (1,2) (0,1,2)"
-        s = list(iterable)
-        return list(chain.from_iterable(combinations(s, r) for r in range(len(s) + 1)))
-
-    def feasible_permutations(self, players_number, rt_players):
-        set_players = []
-
-        if rt_players is None:
-            # one half rt and the other half nrt
-            rt_players = round((players_number - 1) / 2)
-        # assign type to players
-        for i in range(players_number):
-            # valid only for SPs
-            # SPs NRT
-            if i != 0 and rt_players > 0:
-                set_players.append((i, "rt"))
-                rt_players -= 1
-            # SPs NRT
-            elif i != 0:
-                set_players.append((i, "nrt"))
-            # NO
-            else:
-                set_players.append((i, "NO"))
-
-        perms = self._all_permutations(set_players)
-        feasible_perms = []
-        # to exclude the coalition with just the NO and empty coalition we start from index 2
-        for perm in perms[2:]:
-            if 0 in perm[0]:
-                feasible_perms.append(perm)
-        return perms
 
     # we can provide the number of config to try
     # inputs: type of slots, it can be seconds or minutes
@@ -304,13 +271,16 @@ class Game:
                     for k in coalitions_infos:
                         if k["coalition"] == intersection:
                             intersection_value = k[tmp]
+
                         if k["coalition"] == union:
                             union_value = k[tmp]
+                            print(k["coalition"], union)
+                            print(k[tmp])
                     # round values for the comparison
                     if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
                         convexity.append(True)
                     else:
-                        # print(union, union_value)
+                        # print(union, union_value,coal1, coal2 )
                         # print(intersection, intersection_value)
                         # print(union_value - (coal1_value + coal2_value - intersection_value))
                         convexity.append(False)

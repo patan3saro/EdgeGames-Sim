@@ -1,5 +1,6 @@
 from game import Game
 import json
+import utils
 
 
 # by default player 0 is the NO
@@ -9,7 +10,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004,
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
-    coalitions = game.feasible_permutations(players_number, rt_players)
+    coalitions = utils.feasible_permutations(players_number, rt_players)
     # Config manual or automatic
     # automatic --> combinatorial configurations
     if p_cpu is None:

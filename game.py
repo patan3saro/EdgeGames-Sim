@@ -186,7 +186,7 @@ class Game:
             tot_utility = tot_utility + utility_time_sum
             i += 1
         # we use minimize function, so to maximize we minimize the opposite
-        return -(tot_utility - p_cpu * capacity)
+        return -50  # -(tot_utility - p_cpu * capacity)
 
     # OPTIMIZATION
     def constraint1(self, x):
@@ -206,7 +206,7 @@ class Game:
             x0.append(x0[0] / players_number)
         # I bound the capacity: first item in tuple
         bnds = ((0, None),) * players_number
-        sol = minimize(self.coal_payoff_objective_function, x0, bounds=bnds, method='SLSQP', constraints=cons)
+        sol = minimize(self.coal_payoff_objective_function, np.array(x0), bounds=bnds, method='SLSQP', constraints=cons)
         return sol
 
     def calculate_coal_payoff_second_game(self, resources):
@@ -214,7 +214,6 @@ class Game:
         # the objective func must be like this
         _, T_horizon, coalition, _, simulation_type = self.get_params()
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
-            print(coalition)
             return 0
         tot_utility = 0
         # if the network operator is not in the coalition or It is alone
@@ -239,7 +238,7 @@ class Game:
             tot_utility = tot_utility + utility_time_sum
             i += 1
         # we use minimize function, so to maximize we minimize the opposite
-        return tot_utility
+        return 60  # tot_utility
 
     def calculate_payoff_vector(self, coal_payoff, coalition, players_numb):
         payoff_vector = [0] * players_numb
@@ -280,6 +279,9 @@ class Game:
 
     def is_convex(self, coalitions_infos, game_type):
         convexity = []
+        tmp = ""
+        union_value = 0
+        intersection_value = 0
         if game_type == "first":
             tmp = "coalitional_payoff"
         elif game_type == "second":
@@ -308,9 +310,9 @@ class Game:
                     if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
                         convexity.append(True)
                     else:
-                        #print(union, union_value)
-                        #print(intersection, intersection_value)
-                        #print(union_value - (coal1_value + coal2_value - intersection_value))
+                        # print(union, union_value)
+                        # print(intersection, intersection_value)
+                        # print(union_value - (coal1_value + coal2_value - intersection_value))
                         convexity.append(False)
 
         return False not in convexity
@@ -319,7 +321,7 @@ class Game:
         coalition_players_number = len(best_coalition)
         x_payoffs = []
         N_factorial = math.factorial(players_number)
-
+        tmp0 = ""
         if game_type == "first":
             tmp0 = "coalitional_payoff"
         elif game_type == "second":
@@ -350,7 +352,6 @@ class Game:
         zip_object = zip(a[1], a[0])
         for list1_i, list2_i in zip_object:
             difference.append(list1_i - list2_i)
-
         return difference
 
     # GETTERS AND SETTERS

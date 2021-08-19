@@ -6,7 +6,7 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.04/525600, horizon=1, type_slot_t="min",
+def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/525600, horizon=1, type_slot_t="min",
          beta=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -39,7 +39,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.04/5
         # we exclude the empty coalition
         for coalition in coalitions:
             # preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta)
+            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
@@ -49,7 +49,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.04/5
             # computation of the payoff_vector
             payoffs_vector = game.calculate_payoff_vector(coal_payoff, coalition, players_number)
             optimal_decision = tuple(sol['x'])
-            coal_payoff_second_game = game.calculate_coal_payoff_second_game(optimal_decision)
+            coal_payoff_second_game = game.calculate_coal_payoff_second_game()
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon

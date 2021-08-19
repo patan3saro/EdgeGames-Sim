@@ -1,38 +1,12 @@
 import math
 import numpy as np
 from scipy.optimize._minimize import minimize
+
+import core
 import utils
 
 
 class Game:
-
-    # we can provide the number of config to try
-    # inputs: type of slots, it can be seconds or minutes
-    # realistic time horizon of a cpu
-    def generate_configs(self, max_config_number=23, type_slot='min', years_horizon=3):
-        # available time horizons
-        configurations = []
-        one_year_minutes = 525600
-        one_year_seconds = 3.154e+7
-        T_horizon_avail = []
-        if type_slot == "sec":
-            t = one_year_seconds
-        elif type_slot == "min":
-            t = one_year_minutes
-        for i in range(years_horizon):
-            T_horizon_avail.append(t * (i + 1))
-        # available cpu prices per mCore
-        # obs: realistic prices e.g. based on commercial expensive CPUs
-        p_cpu_list = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-        # it generates all the combination M*N where M,N are the lengths of the two lists
-        # these combinations are
-        gen = ((x, y) for x in p_cpu_list for y in T_horizon_avail)
-        # configurations is a list of tuples
-        for u, v in gen:
-            configurations.append((u, v))
-        # we return the maximum number allowed of configs
-        # Warning: SISTEMA QUESTA COSA CONSIDERANDO CHE POI GLI USERS POSSONO INSERIRLA!!!!
-        return configurations[:min(max_config_number, len(configurations))]
 
     # useful functions to create the utility at time t for each player
     def _f(self, resources, a):
@@ -115,21 +89,17 @@ class Game:
             load = self._generate_load(eta, sigma)
         # benefit factor dollars per mCore per minute
         # see: https://edge.network/en/pricing/
-        beta = 0.007 / (60 * 4000)
+        beta = self.get_params()[5]
         # converting load in needed resources
         converted_load = load * conversion_factor
         # the utility saturate if converted load>resources
         variable = min(converted_load, resources)
         return beta * variable
 
-    # to calculate the coalitional utility we simulate intervals
+    # max payoff computation
+    def calculate_coal_payoff(self):
+        p_cpu, T_horizon, coalition, _, simulation_type, beta = self.get_params()
 
-    def coal_payoff_objective_function(self, x):
-        # I get in this way the parameters because the signature of
-        # the objective func must be like this
-        p_cpu, T_horizon, coalition, _, simulation_type = self.get_params()
-        capacity = x[0]
-        resources = x[1:]
         tot_utility = 0
         # if the network operator is not in the coalition or It is alone
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
@@ -143,7 +113,7 @@ class Game:
         # coalition is a tuple that specify the type of player also
         i = 1
         for player in coalition[1:]:
-            utility_time_sum = 0
+            coalition_utility_sum = 0
             player_type = player[1]
             # WARNING: correct this multiplication with and explain why you deleted loop!
             # for t in range(T_horizon):
@@ -152,34 +122,26 @@ class Game:
             utility_time_sum = T_horizon * utility_f(resources[i - 1], player_type)
             tot_utility = tot_utility + utility_time_sum
             i += 1
-        # we use minimize function, so to maximize we minimize the opposite
-        return -50  # -(tot_utility - p_cpu * capacity)
 
-    # OPTIMIZATION
-    def constraint1(self, x):
-        players_number = self.get_params()[3]
-        eq = x[0]
-        for i in range(players_number - 1):
-            eq -= x[i + 1]
-        return eq
 
-    # max payoff computation
-    def calculate_coal_payoff(self):
-        con1 = {'type': 'eq', 'fun': self.constraint1}
-        cons = [con1]
-        players_number = self.get_params()[3]
-        x0 = [1000]
-        for i in range(players_number - 1):
-            x0.append(x0[0] / players_number)
-        # I bound the capacity: first item in tuple
-        bnds = ((0, None),) * players_number
-        sol = minimize(self.coal_payoff_objective_function, np.array(x0), bounds=bnds, method='SLSQP', constraints=cons)
+        # cost vector with benefit factor and cpu price
+        # we use a minimize-function, so to maximize we minimize the opposite
+        c = [-beta] * T_horizon + [p_cpu]
+        coal_payoff_second_game = self.calculate_coal_payoff_second_game(optimal_decision)
+
+        A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
+        A_ub = -np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
+        b_eq = np.array([coal_payoff_second_game / T_horizon] * T_horizon)
+        b_ub = -np.zeros(shape=T_horizon)
+        # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
+        params = (c, A_ub, A_eq, b_ub, b_eq, [])
+        core.find_core(params)
         return sol
 
     def calculate_coal_payoff_second_game(self, resources):
         # I get in this way the parameters because the signature of
         # the objective func must be like this
-        _, T_horizon, coalition, _, simulation_type = self.get_params()
+        _, T_horizon, coalition, _, simulation_type, _ = self.get_params()
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
             return 0
         tot_utility = 0
@@ -205,7 +167,7 @@ class Game:
             tot_utility = tot_utility + utility_time_sum
             i += 1
         # we use minimize function, so to maximize we minimize the opposite
-        return 60  # tot_utility
+        return tot_utility
 
     def calculate_payoff_vector(self, coal_payoff, coalition, players_numb):
         payoff_vector = [0] * players_numb
@@ -232,60 +194,6 @@ class Game:
                     else:
                         best_coalition = {}
         return best_coalition
-
-    def is_individually_rational(self, payoff_vector):
-        tmp = [payoff_vector[i] >= 0 for i in range(0, len(payoff_vector))]
-        return False not in tmp
-
-    def is_efficient(self, coal_payoff, payoff_vector):
-        # we consider the presence of some approximation loss
-        return abs(sum(payoff_vector) - coal_payoff) <= 0.5
-
-    def is_an_imputation(self):
-        return self.is_efficient() and self.is_individually_rational()
-
-    def is_convex(self, coalitions_infos, game_type):
-        convexity = []
-        tmp = ""
-        union_value = 0
-        intersection_value = 0
-        if game_type == "first":
-            tmp = "coalitional_payoff"
-        elif game_type == "second":
-            tmp = "second_game_coalitional_payoff"
-
-        for i in range(len(coalitions_infos)):
-            for j in (range(i + 1, len(coalitions_infos))):
-                coal1 = coalitions_infos[i]["coalition"]
-                coal2 = coalitions_infos[j]["coalition"]
-                coal1_value = coalitions_infos[i][tmp]
-                coal2_value = coalitions_infos[j][tmp]
-
-                # searching for the union and intersection coalition
-                union = tuple(set(coal1).union(coal2))
-                intersection = tuple(set(coal1).intersection(coal2))
-
-                if (0, 'NO') not in union:
-                    convexity.append(True)
-                else:
-                    for k in coalitions_infos:
-                        if k["coalition"] == intersection:
-                            intersection_value = k[tmp]
-
-                        if k["coalition"] == union:
-                            union_value = k[tmp]
-                            print(k["coalition"], union)
-                            print(k[tmp])
-                    # round values for the comparison
-                    if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
-                        convexity.append(True)
-                    else:
-                        # print(union, union_value,coal1, coal2 )
-                        # print(intersection, intersection_value)
-                        # print(union_value - (coal1_value + coal2_value - intersection_value))
-                        convexity.append(False)
-
-        return False not in convexity
 
     def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions, game_type):
         coalition_players_number = len(best_coalition)

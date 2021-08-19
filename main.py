@@ -6,7 +6,8 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004, horizon=3, type_slot_t="min"):
+def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.04/525600, horizon=1, type_slot_t="min",
+         beta=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -19,7 +20,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004,
     else:
         configurations = [p_cpu]
     if type_slot_t == "min":
-        T_horizon = horizon * 525600
+        T_horizon = horizon * 10 #525600
     elif type_slot_t == "sec":
         T_horizon = horizon * 3.154e+7
     else:
@@ -38,7 +39,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004,
         # we exclude the empty coalition
         for coalition in coalitions:
             # preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type)
+            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
@@ -74,6 +75,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004,
             infos_all_coal_one_config = elem
     print(json.dumps(best_of_the_best_coal, indent=4))
     games_payoff_vectors = []
+'''
     for q in game_type:
         print("Checking if the", q, "game is convex...\n")
         if game.is_convex(infos_all_coal_one_config, q):
@@ -94,7 +96,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.004,
             print("The game is not convex!\n")
     print("Each player pay:\n")
     print(game.how_much_must_pay(games_payoff_vectors))
-
+'''
 
 if __name__ == '__main__':
     # players_number=int(input("Insert players' number"))

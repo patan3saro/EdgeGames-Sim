@@ -20,7 +20,7 @@ def main(players_number=2, simulation_type="real", rt_players=None, p_cpu=0.04/5
     else:
         configurations = [p_cpu]
     if type_slot_t == "min":
-        T_horizon = horizon * 10 #525600
+        T_horizon = horizon * 5 #525600
     elif type_slot_t == "sec":
         T_horizon = horizon * 3.154e+7
     else:

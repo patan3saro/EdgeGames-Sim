@@ -36,7 +36,7 @@ class Game:
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
-        tmp = eta  # np.random.randint(eta - sigma/2, eta + sigma/2)
+        tmp = np.random.randint(eta - sigma/2, eta + sigma/2)
         return tmp
 
     def _1_player_utility_t(self, resources, player_type):
@@ -48,8 +48,8 @@ class Game:
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 20
-            sigma = 4
+            eta = 500
+            sigma = 50
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
@@ -59,12 +59,12 @@ class Game:
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 14
-            sigma = 2
+            eta = 140
+            sigma = 20
             load = self._generate_load(eta, sigma)
         return self._f(resources, a) * self._g(load)
 
-    def _2_player_utility_t(self, resources, player_type):
+    def _2_player_utility_t(self, player_type):
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
@@ -84,7 +84,7 @@ class Game:
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 10000
+            eta = 150
             sigma = 50
             load = self._generate_load(eta, sigma)
         # benefit factor dollars per mCore per minute
@@ -92,50 +92,43 @@ class Game:
         beta = self.get_params()[5]
         # converting load in needed resources
         converted_load = load * conversion_factor
-        # the utility saturate if converted load>resources
-        variable = min(converted_load, resources)
-        return beta * variable
+        return converted_load
 
     # max payoff computation
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, simulation_type, beta = self.get_params()
 
+        p_cpu, T_horizon, coalition, _, simulation_type, beta = self.get_params()
         tot_utility = 0
+        b_eq = []
         # if the network operator is not in the coalition or It is alone
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
-            return 0
-        if simulation_type == "real":
-            utility_f = self._2_player_utility_t
+            b_eq = [0]*T_horizon
         else:
-            utility_f = self._1_player_utility_t
+            if simulation_type == "real":
+                utility_f = self._2_player_utility_t
+            else:
+                utility_f = self._1_player_utility_t
 
-        # we calculate utility function at t for a player only for SPs
-        # coalition is a tuple that specify the type of player also
-        i = 1
-        for player in coalition[1:]:
-            coalition_utility_sum = 0
-            player_type = player[1]
-            # WARNING: correct this multiplication with and explain why you deleted loop!
-            # for t in range(T_horizon):
-            # remember that resources is a vector
-            # utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
-            utility_time_sum = T_horizon * utility_f(resources[i - 1], player_type)
-            tot_utility = tot_utility + utility_time_sum
-            i += 1
+            # we calculate utility function at t for a player only for SPs
+            # coalition is a tuple that specify the type of player also
 
-
+            for t in range(T_horizon):
+                tot_utility=0
+                for player in coalition[1:]:
+                    player_type = player[1]
+                    tot_utility += utility_f(player_type)
+                b_eq.append(tot_utility)
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         c = [-beta] * T_horizon + [p_cpu]
-        coal_payoff_second_game = self.calculate_coal_payoff_second_game(optimal_decision)
 
         A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
         A_ub = -np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
-        b_eq = np.array([coal_payoff_second_game / T_horizon] * T_horizon)
+        b_eq = np.array(b_eq)
         b_ub = -np.zeros(shape=T_horizon)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         params = (c, A_ub, A_eq, b_ub, b_eq, [])
-        core.find_core(params)
+        sol = core.find_core(params)
         return sol
 
     def calculate_coal_payoff_second_game(self, resources):
@@ -163,7 +156,7 @@ class Game:
             # for t in range(T_horizon):
             # remember that resources is a vector
             # utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
-            utility_time_sum = T_horizon * utility_f(resources[i - 1], player_type)
+            utility_time_sum = T_horizon * utility_f(player_type)
             tot_utility = tot_utility + utility_time_sum
             i += 1
         # we use minimize function, so to maximize we minimize the opposite

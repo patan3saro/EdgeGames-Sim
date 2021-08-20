@@ -128,7 +128,7 @@ class Game:
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = np.array([-beta] * T_horizon + [p_cpu])
+        c = np.array([beta] * T_horizon + [-p_cpu])
 
         A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
         A_ub = np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)

@@ -98,7 +98,10 @@ class Game:
     def calculate_coal_payoff(self):
 
         p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb = self.get_params()
-
+        # matrix with all the b for each player
+        # rows = players  // columns = time steps in time horizon
+        B_eq = []
+        N = players_numb
         if simulation_type == "real":
             utility_f = self._2_player_utility_t
         else:
@@ -108,43 +111,39 @@ class Game:
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_eq = [0] * T_horizon
         else:
-            N = players_numb
             b_eq = []
-            # matrix with all the b for each player
-            # rows = players  // columns = time steps in time horizon
-            B_eq = np.empty(shape=(N, T_horizon))
             # we calculate utility function at t for a player only for SPs
             # coalition is a tuple that specify the type of player also
             for t in range(T_horizon):
                 tot_utility = 0
-                tmp_arr = []*(players_numb-1)
+                tmp_arr = [0] * players_numb
                 for player in coalition[1:]:
                     player_type = player[1]
                     tmp0 = utility_f(player_type)
                     tot_utility += tmp0
-                    tmp_arr.append(tmp0)
-                print("BBBBBBBB", len(tmp_arr))
-                np.append(B_eq, tmp_arr, axis=1)
+                    tmp_arr[player[0]] = tmp0
+                B_eq.append(tmp_arr)
                 b_eq.append(tot_utility)
-            print("AAAAAAAAAA", B_eq)
+            B_eq = np.matrix(B_eq)
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = [-beta] * T_horizon + [p_cpu]
+        c = np.array([-beta] * T_horizon + [p_cpu])
 
         A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
         A_ub = -np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
         b_eq = np.array(b_eq)
         b_ub = -np.zeros(shape=T_horizon)
+        B = np.transpose(np.concatenate((B_eq, np.zeros(shape=(5, 3)))))
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        params = (c, A_ub, A_eq, b_ub, b_eq, [])
+        params = (c, A_ub, A_eq, b_ub, b_eq, [], B)
         sol = core.find_core(params)
         return sol
 
     def calculate_coal_payoff_second_game(self):
         # I get in this way the parameters because the signature of
         # the objective func must be like this
-        _, T_horizon, coalition, _, simulation_type, _ , _= self.get_params()
+        _, T_horizon, coalition, _, simulation_type, _, _ = self.get_params()
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
             return 0
         tot_utility = 0

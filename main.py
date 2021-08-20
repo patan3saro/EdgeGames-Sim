@@ -6,7 +6,7 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/525600, horizon=1, type_slot_t="min",
+def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 / 525600, horizon=1, type_slot_t="min",
          beta=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -20,7 +20,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/5
     else:
         configurations = [p_cpu]
     if type_slot_t == "min":
-        T_horizon = horizon * 5 #525600
+        T_horizon = horizon * 5  # 525600
     elif type_slot_t == "sec":
         T_horizon = horizon * 3.154e+7
     else:
@@ -30,6 +30,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/5
     best_of_the_best_coal = {}
     best_max_payoff = -1
     all_infos = []
+
     game_type = ("first", "second")
     for configuration in configurations:
         infos_all_coal_one_config = []
@@ -37,7 +38,8 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/5
         max_payoff = -0.1
         p_cpu = configuration
         # we exclude the empty coalition
-        for coalition in coalitions:
+        for coalition in coalitions[1]:
+            coalition = coalitions[-1]
             # preparing parameters to calculate payoff
             params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number)
             game.set_params(params)
@@ -75,6 +77,8 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04/5
             infos_all_coal_one_config = elem
     print(json.dumps(best_of_the_best_coal, indent=4))
     games_payoff_vectors = []
+
+
 '''
     for q in game_type:
         print("Checking if the", q, "game is convex...\n")

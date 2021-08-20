@@ -1,21 +1,23 @@
 import math
 
+import numpy as np
 
-def is_individually_rational(self, payoff_vector):
+
+def _is_individually_rational(payoff_vector):
     tmp = [payoff_vector[i] >= 0 for i in range(0, len(payoff_vector))]
     return False not in tmp
 
 
-def is_efficient(self, coal_payoff, payoff_vector):
+def _is_efficient(coal_payoff, payoff_vector):
     # we consider the presence of some approximation loss
-    return abs(sum(payoff_vector) - coal_payoff) <= 0.5
+    return abs(np.sum(payoff_vector) - coal_payoff) <= 0.1
 
 
-def is_an_imputation(self):
-    return self.is_efficient() and self.is_individually_rational()
+def is_an_imputation(coal_payoff, payoff_vector):
+    return _is_efficient(coal_payoff, payoff_vector) and _is_individually_rational(payoff_vector)
 
 
-def is_convex(self, coalitions_infos, game_type):
+def is_convex(coalitions_infos, game_type):
     convexity = []
     tmp = ""
     union_value = 0

@@ -100,8 +100,9 @@ class Game:
         p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb = self.get_params()
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
-        B_eq = []
         N = players_numb
+        B_eq = np.zeros(shape=(T_horizon, N))
+
         if simulation_type == "real":
             utility_f = self._2_player_utility_t
         else:
@@ -123,9 +124,8 @@ class Game:
                     tot_utility += tmp0
                     tmp_arr[player[0]] = tmp0
                 tmp_arr[0] = np.sum(tmp_arr)
-                B_eq.append(tmp_arr)
-                b_eq.append(2*tot_utility)
-            B_eq = np.matrix(B_eq)
+                B_eq = np.append(B_eq, tmp_arr, axis=1)
+                b_eq.append(2 * tot_utility)
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
@@ -135,7 +135,9 @@ class Game:
         A_ub = np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
         b_eq = np.array(b_eq)
         b_ub = np.zeros(shape=T_horizon)
-        B = np.transpose(np.concatenate((B_eq, np.zeros(shape=(5, 3)))))
+
+        print(B_eq, np.zeros(shape=(T_horizon, N)))
+        B = np.transpose(np.concatenate((B_eq, np.zeros(shape=(T_horizon, N)))))
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (T_horizon + 1)
         params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B)
@@ -186,11 +188,11 @@ class Game:
         for i in range(len(info_all_coalitions)):
             for j in range(1, len(info_all_coalitions)):
                 if (0, 'NO') in info_all_coalitions[i]["coalition"] or (0, 'NO') in info_all_coalitions[j]["coalition"]:
-                    tmp0 = False not in np.greater_equal(info_all_coalitions[i]["payoffs_vector"],
+                    tmp0 = False not in np.greater_equal(info_all_coalitions[i]["core"],
                                                          info_all_coalitions[j]
-                                                         ["payoffs_vector"])
-                    tmp1 = False not in np.less_equal(info_all_coalitions[i]["payoffs_vector"], info_all_coalitions[j]
-                    ["payoffs_vector"])
+                                                         ["core"])
+                    tmp1 = False not in np.less_equal(info_all_coalitions[i]["core"], info_all_coalitions[j]
+                    ["core"])
                     if tmp0:
                         best_coalition = info_all_coalitions[i]
                     elif tmp1:

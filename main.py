@@ -1,6 +1,7 @@
 from game import Game
 import json
 import utils
+import coop_properties as cp
 
 
 # by default player 0 is the NO
@@ -38,18 +39,17 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
         max_payoff = -0.1
         p_cpu = configuration
         # we exclude the empty coalition
-        for coalition in coalitions[1]:
-            coalition = coalitions[-1]
+        for coalition in coalitions[1:]:
             # preparing parameters to calculate payoff
             params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
-            sol = game.calculate_coal_payoff()
+            sol, payoffs_vector = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
-            # remember that we minimize so maximum is the opposite
-            coal_payoff = - sol['fun']
+            coal_payoff = sol['fun']
+            if (cp.is_an_imputation(coal_payoff, payoffs_vector)):
+                print("core ok")
             # computation of the payoff_vector
-            payoffs_vector = game.calculate_payoff_vector(coal_payoff, coalition, players_number)
             optimal_decision = tuple(sol['x'])
             coal_payoff_second_game = game.calculate_coal_payoff_second_game()
             info_dict = {"configuration": {
@@ -59,7 +59,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
                 "coalitional_payoff": coal_payoff,
                 "second_game_coalitional_payoff": coal_payoff_second_game,
                 "optimal_variables": optimal_decision,
-                "payoffs_vector": payoffs_vector
+                "core": payoffs_vector
             }
             # keeping the best coalition for a given configuration
             infos_all_coal_one_config.append(info_dict)
@@ -75,7 +75,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     for elem in all_infos:
         if best_of_the_best_coal in elem:
             infos_all_coal_one_config = elem
-    print(json.dumps(best_of_the_best_coal, indent=4))
+    print(best_of_the_best_coal)
     games_payoff_vectors = []
 
 

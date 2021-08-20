@@ -122,8 +122,9 @@ class Game:
                     tmp0 = utility_f(player_type)
                     tot_utility += tmp0
                     tmp_arr[player[0]] = tmp0
+                tmp_arr[0] = np.sum(tmp_arr)
                 B_eq.append(tmp_arr)
-                b_eq.append(tot_utility)
+                b_eq.append(2*tot_utility)
             B_eq = np.matrix(B_eq)
 
         # cost vector with benefit factor and cpu price

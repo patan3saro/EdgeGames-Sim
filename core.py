@@ -21,4 +21,4 @@ def find_core(params):
 
     payoff_vector = np.matmul(B, dual_sol['x'])
     print(payoff_vector)
-    return primal_sol
+    return

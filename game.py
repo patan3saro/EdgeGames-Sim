@@ -131,12 +131,13 @@ class Game:
         c = np.array([-beta] * T_horizon + [p_cpu])
 
         A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
-        A_ub = -np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
+        A_ub = np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
         b_eq = np.array(b_eq)
-        b_ub = -np.zeros(shape=T_horizon)
+        b_ub = np.zeros(shape=T_horizon)
         B = np.transpose(np.concatenate((B_eq, np.zeros(shape=(5, 3)))))
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        params = (c, A_ub, A_eq, b_ub, b_eq, [], B)
+        bounds = ((0, None),) * (T_horizon + 1)
+        params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B)
         sol = core.find_core(params)
         return sol
 

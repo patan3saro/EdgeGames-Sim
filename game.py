@@ -111,6 +111,7 @@ class Game:
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_eq = [0] * T_horizon
+            B_eq = np.zeros(shape=(2*T_horizon, N))
         else:
             b_eq = []
             # we calculate utility function at t for a player only for SPs
@@ -123,9 +124,10 @@ class Game:
                     tmp0 = utility_f(player_type)
                     tot_utility += tmp0
                     tmp_arr[player[0]] = tmp0
+
                 tmp_arr[0] = np.sum(tmp_arr)
-                B_eq = np.append(B_eq, tmp_arr, axis=1)
-                b_eq.append(2 * tot_utility)
+                B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
+                b_eq.append(2*tot_utility)
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
@@ -136,8 +138,7 @@ class Game:
         b_eq = np.array(b_eq)
         b_ub = np.zeros(shape=T_horizon)
 
-        print(B_eq, np.zeros(shape=(T_horizon, N)))
-        B = np.transpose(np.concatenate((B_eq, np.zeros(shape=(T_horizon, N)))))
+        B = np.transpose(B_eq)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (T_horizon + 1)
         params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B)

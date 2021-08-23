@@ -19,7 +19,8 @@ def find_core(params):
     dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, A_eq=None, b_eq=None, bounds=bounds, method='interior-point',
                        callback=None, options=None, x0=None)
 
-    payoff_vector = np.matmul(B / 2, dual_sol['x'] / 2)
     # we divide by 2 the payoff because we need to split the payoff in a non fair way adding a false use of resources
     # by the no
+    payoff_vector = np.matmul(B, dual_sol['x'])/2
+
     return dual_sol, payoff_vector

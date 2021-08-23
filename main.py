@@ -47,8 +47,22 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
             sol, payoffs_vector = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-            if (cp.is_an_imputation(coal_payoff, payoffs_vector)):
-                print("core ok")
+
+            print("Verifying properties of core\n")
+            if cp.is_an_imputation(coal_payoff, payoffs_vector):
+                print("Core is an imputation!\n")
+                print("Check if payoff vector is group rational...\n")
+                if cp.is_group_rational():
+                    print("The payoff vector is group rational!\n")
+                    print("The payoff vector is in the core!\n")
+                    print("Core verification terminated successfully!")
+                else:
+                    print("The payoff vector isn't group rational!\n")
+                    print("The payoff vector is not in the core!\n")
+                    print("Core verification terminated unsuccessfully!")
+            else:
+                print("The payoff vector isn't an imputation\n")
+                print("Core verification terminated unsuccessfully!")
             # computation of the payoff_vector
             optimal_decision = tuple(sol['x'])
             coal_payoff_second_game = game.calculate_coal_payoff_second_game()

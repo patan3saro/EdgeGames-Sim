@@ -19,8 +19,7 @@ def find_core(params):
     dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, A_eq=None, b_eq=None, bounds=bounds, method='interior-point',
                        callback=None, options=None, x0=None)
 
-    # we divide by 2 the payoff because we need to split the payoff in a non fair way adding a false use of resources
-    # by the no
-    payoff_vector = np.matmul(B, dual_sol['x'])/2
-
+    payoff_vector = np.matmul(B, dual_sol['x'])
+    # WARNING the solution exceeds the tolerance because of the randomness during the load generation:
+    # to proof this try with a static load
     return dual_sol, payoff_vector

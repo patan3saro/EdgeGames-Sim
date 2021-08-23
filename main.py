@@ -13,6 +13,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
     coalitions = utils.feasible_permutations(players_number, rt_players)
+    grand_coalition = coalitions[-1]
     # Config manual or automatic
     # automatic --> combinatorial configurations
     if p_cpu is None:
@@ -35,6 +36,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     game_type = ("first", "second")
     for configuration in configurations:
         infos_all_coal_one_config = []
+        all_coal_payoffs = []
         best_coalition = {}
         max_payoff = -0.1
         p_cpu = configuration
@@ -47,22 +49,6 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
             sol, payoffs_vector = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-
-            print("Verifying properties of core\n")
-            if cp.is_an_imputation(coal_payoff, payoffs_vector):
-                print("Core is an imputation!\n")
-                print("Check if payoff vector is group rational...\n")
-                if cp.is_group_rational():
-                    print("The payoff vector is group rational!\n")
-                    print("The payoff vector is in the core!\n")
-                    print("Core verification terminated successfully!")
-                else:
-                    print("The payoff vector isn't group rational!\n")
-                    print("The payoff vector is not in the core!\n")
-                    print("Core verification terminated unsuccessfully!")
-            else:
-                print("The payoff vector isn't an imputation\n")
-                print("Core verification terminated unsuccessfully!")
             # computation of the payoff_vector
             optimal_decision = tuple(sol['x'])
             coal_payoff_second_game = game.calculate_coal_payoff_second_game()
@@ -77,14 +63,18 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
             }
             # keeping the best coalition for a given configuration
             infos_all_coal_one_config.append(info_dict)
+            all_coal_payoffs.append(coal_payoff)
+            if coalition == grand_coalition:
+                grand_coal_payoff = coal_payoff
+                grandc_payoff_vec = payoffs_vector
 
-        best_coalition = game.best_coalition(infos_all_coal_one_config)
+        game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec)
         all_infos.append(infos_all_coal_one_config)
-        tmp_payoff = best_coalition["coalitional_payoff"]
+        tmp_payoff = 0  # best_coalition["coalitional_payoff"]
 
-        if tmp_payoff > best_max_payoff:
-            best_of_the_best_coal = best_coalition
-            best_max_payoff = tmp_payoff
+        # if tmp_payoff > best_max_payoff:
+        #    best_of_the_best_coal = best_coalition
+        #    best_max_payoff = tmp_payoff
     # choosing info of all coalition for the best config
     for elem in all_infos:
         if best_of_the_best_coal in elem:

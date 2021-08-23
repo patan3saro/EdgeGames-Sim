@@ -1,9 +1,8 @@
 import math
 import numpy as np
-from scipy.optimize._minimize import minimize
 
+import coop_properties as cp
 import core
-import utils
 
 
 class Game:
@@ -111,23 +110,26 @@ class Game:
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_eq = [0] * T_horizon
-            B_eq = np.zeros(shape=(2*T_horizon, N))
+            B_eq = np.zeros(shape=(2 * T_horizon, N))
         else:
             b_eq = []
             # we calculate utility function at t for a player only for SPs
             # coalition is a tuple that specify the type of player also
             for t in range(T_horizon):
-                tot_utility = 0
+                #in the paper y_t^S
+                used_resources = 0
                 tmp_arr = [0] * players_numb
                 for player in coalition[1:]:
                     player_type = player[1]
-                    tmp0 = utility_f(player_type)
-                    tot_utility += tmp0
+                    tmp0 = utility_f(player_type)/2
+                    used_resources += tmp0
                     tmp_arr[player[0]] = tmp0
-
+                # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
+                # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
+                # thanks to him
                 tmp_arr[0] = np.sum(tmp_arr)
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
-                b_eq.append(2*tot_utility)
+                b_eq.append(2*used_resources)
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
@@ -144,6 +146,23 @@ class Game:
         params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B)
         sol = core.find_core(params)
         return sol
+
+    def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector):
+        print("Verifying properties of core\n")
+        if cp.is_an_imputation(coal_payoff, payoffs_vector):
+            print("Core is an imputation (efficiency + individual rationality)!\n")
+            print("Check if payoff vector is group rational...\n")
+            if cp.is_group_rational(all_coal_payoff, coal_payoff):
+                print("The payoff vector is group rational!\n")
+                print("The payoff vector is in the core!\n")
+                print("Core verification terminated SUCCESSFULLY!")
+            else:
+                print("The payoff vector isn't group rational!\n")
+                print("The payoff vector is not in the core!\n")
+                print("Core verification terminated unsuccessfully!")
+        else:
+            print("The payoff vector isn't an imputation\n")
+            print("Core verification terminated unsuccessfully!")
 
     def calculate_coal_payoff_second_game(self):
         # I get in this way the parameters because the signature of
@@ -175,32 +194,6 @@ class Game:
             i += 1
         # we use minimize function, so to maximize we minimize the opposite
         return tot_utility
-
-    def calculate_payoff_vector(self, coal_payoff, coalition, players_numb):
-        payoff_vector = [0] * players_numb
-        for player in coalition:
-            if len(player) != 0:
-                payoff_vector[player[0]] = coal_payoff / len(coalition)
-        return payoff_vector
-
-    # To check properties
-    def best_coalition(self, info_all_coalitions):
-        best_coalition = {}
-        for i in range(len(info_all_coalitions)):
-            for j in range(1, len(info_all_coalitions)):
-                if (0, 'NO') in info_all_coalitions[i]["coalition"] or (0, 'NO') in info_all_coalitions[j]["coalition"]:
-                    tmp0 = False not in np.greater_equal(info_all_coalitions[i]["core"],
-                                                         info_all_coalitions[j]
-                                                         ["core"])
-                    tmp1 = False not in np.less_equal(info_all_coalitions[i]["core"], info_all_coalitions[j]
-                    ["core"])
-                    if tmp0:
-                        best_coalition = info_all_coalitions[i]
-                    elif tmp1:
-                        best_coalition = info_all_coalitions[j]
-                    else:
-                        best_coalition = {}
-        return best_coalition
 
     def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions, game_type):
         coalition_players_number = len(best_coalition)

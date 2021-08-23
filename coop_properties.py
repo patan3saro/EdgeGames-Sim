@@ -1,5 +1,4 @@
 import math
-
 import numpy as np
 
 
@@ -15,6 +14,30 @@ def _is_efficient(coal_payoff, payoff_vector):
 
 def is_an_imputation(coal_payoff, payoff_vector):
     return _is_efficient(coal_payoff, payoff_vector) and _is_individually_rational(payoff_vector)
+
+
+def is_group_rational(all_coal_payoffs, coal_payoff):
+    return abs(max(all_coal_payoffs) - coal_payoff) <= 0.1
+
+
+# The criterion is to compare the payoffs vectors
+def best_coalition(self, info_all_coalitions):
+    best_coalition = {}
+    for i in range(len(info_all_coalitions)):
+        for j in range(1, len(info_all_coalitions)):
+            if (0, 'NO') in info_all_coalitions[i]["coalition"] or (0, 'NO') in info_all_coalitions[j]["coalition"]:
+                tmp0 = False not in np.greater_equal(info_all_coalitions[i]["core"],
+                                                     info_all_coalitions[j]
+                                                     ["core"])
+                tmp1 = False not in np.less_equal(info_all_coalitions[i]["core"], info_all_coalitions[j]
+                ["core"])
+                if tmp0:
+                    best_coalition = info_all_coalitions[i]
+                elif tmp1:
+                    best_coalition = info_all_coalitions[j]
+                else:
+                    best_coalition = {}
+    return best_coalition
 
 
 def is_convex(coalitions_infos, game_type):

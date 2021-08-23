@@ -1,7 +1,6 @@
 from game import Game
 import json
 import utils
-import coop_properties as cp
 
 
 # by default player 0 is the NO
@@ -37,6 +36,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     for configuration in configurations:
         infos_all_coal_one_config = []
         all_coal_payoffs = []
+        all_coal_payoffs_second = []
         best_coalition = {}
         max_payoff = -0.1
         p_cpu = configuration
@@ -46,29 +46,44 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
             params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
-            sol, payoffs_vector = game.calculate_coal_payoff()
+            sol, payoffs_vector, capacity, coal_payoff_second_game, payoffs_vector_second_game \
+                = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-            # computation of the payoff_vector
-            optimal_decision = tuple(sol['x'])
-            coal_payoff_second_game = game.calculate_coal_payoff_second_game()
+
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
             }, "coalition": coalition,
                 "coalitional_payoff": coal_payoff,
                 "second_game_coalitional_payoff": coal_payoff_second_game,
-                "optimal_variables": optimal_decision,
+                "capacity": capacity,
                 "core": payoffs_vector
             }
             # keeping the best coalition for a given configuration
             infos_all_coal_one_config.append(info_dict)
             all_coal_payoffs.append(coal_payoff)
+            all_coal_payoffs_second.append(coal_payoff_second_game)
             if coalition == grand_coalition:
                 grand_coal_payoff = coal_payoff
                 grandc_payoff_vec = payoffs_vector
+                grand_coal_payoff_second = coal_payoff_second_game
+                grandc_payoff_vec_second = payoffs_vector_second_game
+        # verifing properties for 1st game
+        check_first = True #game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
 
-        game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec)
+        # verifing properties for 2nd game
+        check_second = True #game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,
+                                             #grandc_payoff_vec_second,
+                                             #game_type="second")
+        if check_first and check_second:
+            print("Capacity:", (grand_coal_payoff_second-grand_coal_payoff)/capacity,p_cpu, "mCore")
+            print("Coalition net incomes:", grand_coal_payoff)
+            print("Coalition payment:", grand_coal_payoff_second-grand_coal_payoff)
+            print("Players gross incomes:",  grand_coal_payoff_second)
+            print("Players net incomes:",  grandc_payoff_vec)
+            print("Players payment:", grandc_payoff_vec_second-grandc_payoff_vec)
+
         all_infos.append(infos_all_coal_one_config)
         tmp_payoff = 0  # best_coalition["coalitional_payoff"]
 
@@ -79,7 +94,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     for elem in all_infos:
         if best_of_the_best_coal in elem:
             infos_all_coal_one_config = elem
-    print(best_of_the_best_coal)
+    #print(best_of_the_best_coal)
     games_payoff_vectors = []
 
 

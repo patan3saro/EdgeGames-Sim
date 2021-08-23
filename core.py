@@ -8,7 +8,9 @@ def find_core(params):
 
     primal_sol = linprog(-c, A_ub=-A_ub, b_ub=-b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='interior-point',
                          callback=None, options=None, x0=None)
+    capacity = primal_sol['x'][-1]
 
+    print(capacity, primal_sol['x'])
     c_d = np.concatenate((b_eq, b_ub))
     A_td = np.transpose(np.concatenate((A_eq, A_ub)))
     b_ubd = c
@@ -22,4 +24,10 @@ def find_core(params):
     payoff_vector = np.matmul(B, dual_sol['x'])
     # WARNING the solution exceeds the tolerance because of the randomness during the load generation:
     # to proof this try with a static load
-    return dual_sol, payoff_vector
+
+    # second game values
+    coal_payoff_second = c[0] * np.sum(primal_sol['x'])
+    proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
+    second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
+
+    return dual_sol, payoff_vector, capacity, coal_payoff_second, second_game_payoff_vector

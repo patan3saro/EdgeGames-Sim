@@ -116,12 +116,12 @@ class Game:
             # we calculate utility function at t for a player only for SPs
             # coalition is a tuple that specify the type of player also
             for t in range(T_horizon):
-                #in the paper y_t^S
+                # in the paper y_t^S
                 used_resources = 0
                 tmp_arr = [0] * players_numb
                 for player in coalition[1:]:
                     player_type = player[1]
-                    tmp0 = utility_f(player_type)/2
+                    tmp0 = utility_f(player_type) / 2
                     used_resources += tmp0
                     tmp_arr[player[0]] = tmp0
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
@@ -129,7 +129,7 @@ class Game:
                 # thanks to him
                 tmp_arr[0] = np.sum(tmp_arr)
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
-                b_eq.append(2*used_resources)
+                b_eq.append(2 * used_resources)
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
@@ -147,8 +147,8 @@ class Game:
         sol = core.find_core(params)
         return sol
 
-    def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector):
-        print("Verifying properties of core\n")
+    def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
+        print("Verifying properties of core (", game_type, "game )\n")
         if cp.is_an_imputation(coal_payoff, payoffs_vector):
             print("Core is an imputation (efficiency + individual rationality)!\n")
             print("Check if payoff vector is group rational...\n")
@@ -156,6 +156,7 @@ class Game:
                 print("The payoff vector is group rational!\n")
                 print("The payoff vector is in the core!\n")
                 print("Core verification terminated SUCCESSFULLY!")
+                return True
             else:
                 print("The payoff vector isn't group rational!\n")
                 print("The payoff vector is not in the core!\n")
@@ -163,37 +164,7 @@ class Game:
         else:
             print("The payoff vector isn't an imputation\n")
             print("Core verification terminated unsuccessfully!")
-
-    def calculate_coal_payoff_second_game(self):
-        # I get in this way the parameters because the signature of
-        # the objective func must be like this
-        _, T_horizon, coalition, _, simulation_type, _, _ = self.get_params()
-        if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
-            return 0
-        tot_utility = 0
-        # if the network operator is not in the coalition or It is alone
-        if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition:
-            return 0
-        if simulation_type == "real":
-            utility_f = self._2_player_utility_t
-        else:
-            utility_f = self._1_player_utility_t
-
-        # we calculate utility function at t for a player only for SPs
-        # coalition is a tuple that specify the type of player also
-        i = 1
-        for player in coalition[1:]:
-            utility_time_sum = 0
-            player_type = player[1]
-            # WARNING: correct this multiplication with and explain why you deleted loop!
-            # for t in range(T_horizon):
-            # remember that resources is a vector
-            # utility_time_sum = utility_time_sum + utility_f(resources[player[0]-1], player_type)
-            utility_time_sum = T_horizon * utility_f(player_type)
-            tot_utility = tot_utility + utility_time_sum
-            i += 1
-        # we use minimize function, so to maximize we minimize the opposite
-        return tot_utility
+        return False
 
     def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions, game_type):
         coalition_players_number = len(best_coalition)
@@ -224,13 +195,6 @@ class Game:
             x_payoffs.append((1 / N_factorial) * summation)
 
         return x_payoffs
-
-    def how_much_must_pay(self, a):
-        difference = []
-        zip_object = zip(a[1], a[0])
-        for list1_i, list2_i in zip_object:
-            difference.append(list1_i - list2_i)
-        return difference
 
     # GETTERS AND SETTERS
     # to get parameters p_cpu, T_horizon, coalition, players_number

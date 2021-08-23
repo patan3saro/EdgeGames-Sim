@@ -130,7 +130,7 @@ class Game:
                 tmp_arr[0] = np.sum(tmp_arr)
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
                 b_eq.append(2 * used_resources)
-
+        print(b_eq)
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         c = np.array([beta] * T_horizon + [-p_cpu])

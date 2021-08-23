@@ -5,12 +5,9 @@ from scipy.optimize import linprog
 def find_core(params):
     # number of slots
     c, A_ub, A_eq, b_ub, b_eq, bounds, B = params
-
-    primal_sol = linprog(-c, A_ub=-A_ub, b_ub=-b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='interior-point',
-                         callback=None, options=None, x0=None)
+    primal_sol = linprog(-c, A_ub=-A_ub, b_ub=-b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='interior-point')
     capacity = primal_sol['x'][-1]
 
-    print(capacity, primal_sol['x'])
     c_d = np.concatenate((b_eq, b_ub))
     A_td = np.transpose(np.concatenate((A_eq, A_ub)))
     b_ubd = c
@@ -18,15 +15,16 @@ def find_core(params):
     bounds1 = ((None, 0),) * 5
     bounds = bounds0 + bounds1
 
-    dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, A_eq=None, b_eq=None, bounds=bounds, method='interior-point',
-                       callback=None, options=None, x0=None)
+    dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, A_eq=None, b_eq=None, bounds=bounds, method='interior-point')
 
     payoff_vector = np.matmul(B, dual_sol['x'])
     # WARNING the solution exceeds the tolerance because of the randomness during the load generation:
     # to proof this try with a static load
 
     # second game values
+    print(primal_sol['x'])
     coal_payoff_second = c[0] * np.sum(primal_sol['x'])
+    print(int(coal_payoff_second-dual_sol['fun'])/(-c[-1]*capacity))
     proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
     second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
 

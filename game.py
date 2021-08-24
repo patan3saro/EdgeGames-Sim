@@ -121,15 +121,15 @@ class Game:
                 tmp_arr = [0] * players_numb
                 for player in coalition[1:]:
                     player_type = player[1]
-                    tmp0 = utility_f(player_type) / 2
+                    tmp0 = utility_f(player_type)
                     used_resources += tmp0
                     tmp_arr[player[0]] = tmp0
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
-                tmp_arr[0] = np.sum(tmp_arr)
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
-                b_eq.append(2 * used_resources)
+                b_eq.append(used_resources)
+
 
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite

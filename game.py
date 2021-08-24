@@ -143,7 +143,7 @@ class Game:
         B = np.transpose(B_eq)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (T_horizon + 1)
-        params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B)
+        params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B, T_horizon)
         sol = core.find_core(params)
         return sol
 

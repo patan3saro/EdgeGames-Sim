@@ -155,15 +155,15 @@ class Game:
             if cp.is_group_rational(all_coal_payoff, coal_payoff):
                 print("The payoff vector is group rational!\n")
                 print("The payoff vector is in the core!\n")
-                print("Core verification terminated SUCCESSFULLY!")
+                print("Core verification terminated SUCCESSFULLY!\n")
                 return True
             else:
                 print("The payoff vector isn't group rational!\n")
                 print("The payoff vector is not in the core!\n")
-                print("Core verification terminated unsuccessfully!")
+                print("Core verification terminated unsuccessfully!\n")
         else:
             print("The payoff vector isn't an imputation\n")
-            print("Core verification terminated unsuccessfully!")
+            print("Core verification terminated unsuccessfully!\n")
         return False
 
     def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions, game_type):

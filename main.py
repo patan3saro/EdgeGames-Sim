@@ -1,12 +1,11 @@
 from game import Game
-import json
 import utils
 
 
 # by default player 0 is the NO
 # Players number is mandatory
 # simulation_type
-def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 / 525600, horizon=1, type_slot_t="min",
+def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.0009, horizon=1, type_slot_t="min",
          beta=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -70,19 +69,19 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
                 grand_coal_payoff_second = coal_payoff_second_game
                 grandc_payoff_vec_second = payoffs_vector_second_game
         # verifing properties for 1st game
-        check_first = True #game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
+        check_first = True  # game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
 
         # verifing properties for 2nd game
-        check_second = True #game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,
-                                             #grandc_payoff_vec_second,
-                                             #game_type="second")
+        check_second = True  # game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,
+        # grandc_payoff_vec_second,
+        # game_type="second")
         if check_first and check_second:
-            print("Capacity:", (grand_coal_payoff_second-grand_coal_payoff)/capacity,p_cpu, "mCore")
+            print("Capacity:", (grand_coal_payoff_second - grand_coal_payoff) / capacity, p_cpu, "mCore")
             print("Coalition net incomes:", grand_coal_payoff)
-            print("Coalition payment:", grand_coal_payoff_second-grand_coal_payoff)
-            print("Players gross incomes:",  grand_coal_payoff_second)
-            print("Players net incomes:",  grandc_payoff_vec)
-            print("Players payment:", grandc_payoff_vec_second-grandc_payoff_vec)
+            print("Coalition payment:", grand_coal_payoff_second - grand_coal_payoff)
+            print("Players gross incomes:", grand_coal_payoff_second)
+            print("Players net incomes:", grandc_payoff_vec)
+            print("Players payment:", grandc_payoff_vec_second - grandc_payoff_vec)
 
         all_infos.append(infos_all_coal_one_config)
         tmp_payoff = 0  # best_coalition["coalitional_payoff"]
@@ -94,7 +93,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.04 /
     for elem in all_infos:
         if best_of_the_best_coal in elem:
             infos_all_coal_one_config = elem
-    #print(best_of_the_best_coal)
+    # print(best_of_the_best_coal)
     games_payoff_vectors = []
 
 

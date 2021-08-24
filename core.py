@@ -15,16 +15,16 @@ def find_core(params):
     bounds1 = ((None, 0),) * 5
     bounds = bounds0 + bounds1
 
-    dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, A_eq=None, b_eq=None, bounds=bounds, method='interior-point')
+    dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, bounds=bounds, method='interior-point')
 
     payoff_vector = np.matmul(B, dual_sol['x'])
     # WARNING the solution exceeds the tolerance because of the randomness during the load generation:
     # to proof this try with a static load
 
     # second game values
-    print(primal_sol['x'])
+
     coal_payoff_second = c[0] * np.sum(primal_sol['x'])
-    print(int(coal_payoff_second-dual_sol['fun'])/(-c[-1]*capacity))
+    print(coal_payoff_second - dual_sol['fun'], primal_sol['x'])
     proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
     second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
 

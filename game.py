@@ -67,18 +67,18 @@ class Game:
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
-            conversion_factor = 200
+            conversion_factor = 20
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 20000
+            eta = 2000
             sigma = 80
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
             # used to convert load in mCore
-            conversion_factor = 50
+            conversion_factor = 5
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.1

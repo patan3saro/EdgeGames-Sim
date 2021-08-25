@@ -12,11 +12,15 @@ def find_core(params):
     A_td = np.transpose(np.concatenate((A_eq, A_ub)))
     b_ubd = c
     bounds0 = ((None, None),) * T_horizon
-    bounds1 = ((None, 0),) * (T_horizon + 1)
+    bounds1 = ((None, 0),) * T_horizon
     bounds = bounds0 + bounds1
     print("c", c, "A_ub", A_ub, "A_eq", A_eq, "b_ub", b_ub, "b_eq", b_eq, "B", B, )
 
     dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, bounds=bounds, method='interior-point')
+
+    # checking if the coal payoff of the primal and dual is the same
+    if not (abs(-primal_sol['fun'] - dual_sol['fun']) < 0.1):
+        print("ERROR: the payoff of primal and dual is not the same!\n")
 
     payoff_vector = np.matmul(B, dual_sol['x'])
     # WARNING the solution exceeds the tolerance because of the randomness during the load generation:

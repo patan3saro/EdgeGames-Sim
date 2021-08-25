@@ -131,16 +131,23 @@ class Game:
                 b_eq.append(used_resources)
 
 
+        HS = -500000
+
+        B_eq = np.append(B_eq, [[HS, 0, 0]], axis=0)
+
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         c = np.array([beta] * T_horizon + [-p_cpu])
 
         A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
         A_ub = np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
+        A_ub = np.append(A_ub, [[0, 0, -1]], axis=0)
         b_eq = np.array(b_eq)
         b_ub = np.zeros(shape=T_horizon)
+        b_ub = np.append(b_ub, HS)
 
         B = np.transpose(B_eq)
+        print("ASDFSASDFG", B_eq)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (T_horizon + 1)
         params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B, T_horizon)

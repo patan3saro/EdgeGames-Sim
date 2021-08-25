@@ -12,8 +12,9 @@ def find_core(params):
     A_td = np.transpose(np.concatenate((A_eq, A_ub)))
     b_ubd = c
     bounds0 = ((None, None),) * T_horizon
-    bounds1 = ((None, 0),) * T_horizon
+    bounds1 = ((None, 0),) * (T_horizon + 1)
     bounds = bounds0 + bounds1
+    print("c", c, "A_ub", A_ub, "A_eq", A_eq, "b_ub", b_ub, "b_eq", b_eq, "B", B, )
 
     dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, bounds=bounds, method='interior-point')
 
@@ -23,9 +24,11 @@ def find_core(params):
 
     # second game values
 
-    coal_payoff_second = c[0]*np.sum(primal_sol['x'][:-1])
+    coal_payoff_second = c[0] * np.sum(primal_sol['x'][:-1])
 
     proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
     second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
+
+    print("payoff", payoff_vector, dual_sol['x'])
 
     return dual_sol, payoff_vector, capacity, coal_payoff_second, second_game_payoff_vector

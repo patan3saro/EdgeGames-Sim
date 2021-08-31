@@ -93,14 +93,12 @@ class Game:
         converted_load = load * conversion_factor
         return converted_load
 
-    # max payoff computation
     def calculate_coal_payoff(self):
-
-        p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb = self.get_params()
+        p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb, eta, alpha = self.get_params()
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
         N = players_numb
-        B_eq = np.zeros(shape=(T_horizon+1, N))
+        B_eq = np.zeros(shape=(T_horizon + 1, N))
 
         if simulation_type == "real":
             utility_f = self._2_player_utility_t
@@ -109,10 +107,10 @@ class Game:
 
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
-            b_eq = [0] * T_horizon
+            b_ub = [0] * 5 * T_horizon
             B_eq = np.zeros(shape=(2 * T_horizon + 1, N))
         else:
-            b_eq = []
+            b_tmp = []
             # we calculate utility function at t for a player only for SPs
             # coalition is a tuple that specify the type of player also
             for t in range(T_horizon):
@@ -129,25 +127,38 @@ class Game:
                 # thanks to him
 
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
-                b_eq.append(used_resources)
-
+                b_tmp.append(used_resources)
+            b_ub = np.concatenate(np.zeros(shape=(1, T_horizon)), np.array(b_tmp), - np.array(b_tmp),
+                                  np.zeros(shape=(1, 2 * T_horizon)))
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = np.array([beta] * T_horizon + [-p_cpu])
+        c = np.concatenate(beta * np.ones(shape=(1, T_horizon)), (eta - alpha) * np.ones(shape=(1, T_horizon)),
+                           np.zeros(shape=(1, T_horizon)), -p_cpu)
 
-        A_eq = np.append(np.identity(T_horizon), np.zeros(shape=(T_horizon, 1)), axis=1)
-        A_ub = np.append(-np.identity(T_horizon), np.ones(shape=(T_horizon, 1)), axis=1)
-        b_eq = np.array(b_eq)
-        b_ub = np.zeros(shape=T_horizon)
+        matr_row1 = np.concatenate(np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
+                                   - np.identity(T_horizon),
+                                   np.zeros(shape=(T_horizon, 1), axis=0))
+        matr_row2 = np.concatenate(np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
+                                   np.zeros(shape=(T_horizon, T_horizon + 1)), axis=0)
+        matr_row3 = np.concatenate(np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
+                                   - np.identity(T_horizon),
+                                   np.zeros(shape=(T_horizon, 1), axis=0))
+        matr_row4 = np.concatenate(np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
+                                   np.zeros(shape=(T_horizon, T_horizon)),
+                                   np.zeros(shape=(T_horizon, 1), axis=0))
+        matr_row5 = np.concatenate(np.zeros(shape=(T_horizon, 2 * T_horizon)), np.identity(T_horizon),
+                                   -np.ones(shape=(T_horizon, 1), axis=0))
+
+        A_ub = np.concatenate(matr_row1, matr_row2, matr_row3, matr_row4, matr_row5, axis=1)
 
         B = np.transpose(B_eq)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (T_horizon + 1)
-        params = (c, A_ub, A_eq, b_ub, b_eq, bounds, B, T_horizon)
+        params = (c, A_ub, b_ub, bounds, B, T_horizon)
         sol = core.find_core(params)
 
         return sol
-
+    
     def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
         print("Verifying properties of core (", game_type, "game )\n")
         if cp.is_an_imputation(coal_payoff, payoffs_vector):

@@ -49,7 +49,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
                 = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-            print(coalition, coal_payoff, payoffs_vector)
+
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon

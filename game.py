@@ -98,8 +98,7 @@ class Game:
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
         N = players_numb
-        B_eq = np.zeros(shape=(T_horizon + 1, N))
-
+        B_tmp = []
         if simulation_type == "real":
             utility_f = self._2_player_utility_t
         else:
@@ -108,7 +107,7 @@ class Game:
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_ub = [0] * 5 * T_horizon
-            B_eq = np.zeros(shape=(2 * T_horizon + 1, N))
+            B = np.zeros(shape=(5 * T_horizon, N))
         else:
             b_tmp = []
             # we calculate utility function at t for a player only for SPs
@@ -126,10 +125,13 @@ class Game:
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
 
-                B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
+                B_tmp.append(tmp_arr)
                 b_tmp.append(used_resources)
-            b_ub = np.concatenate(np.zeros(shape=(1, T_horizon)), np.array(b_tmp), - np.array(b_tmp),
-                                  np.zeros(shape=(1, 2 * T_horizon)))
+            B_tmp = np.array(B_tmp)
+
+            B = np.concatenate((np.zeros(shape=(T_horizon, N)), B_tmp, -B_tmp, np.zeros(shape=(2*T_horizon, N))))
+            b_ub = np.concatenate((np.zeros(shape=(1, T_horizon)), np.array([b_tmp]), - np.array([b_tmp]),
+                                  np.zeros(shape=(1, 2 * T_horizon))), axis=1)
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         c = np.concatenate(([beta] * T_horizon, [eta - alpha] * T_horizon,
@@ -150,7 +152,7 @@ class Game:
 
         A_ub = np.concatenate((matr_row1, matr_row2, matr_row3, matr_row4, matr_row5), axis=0)
 
-        B = np.transpose(B_eq)
+        B = np.transpose(B)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (3 * T_horizon + 1)
         params = (c, A_ub, b_ub, bounds, B, T_horizon)

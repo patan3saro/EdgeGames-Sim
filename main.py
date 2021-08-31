@@ -6,7 +6,7 @@ import utils
 # Players number is mandatory
 # simulation_type
 def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-         beta=0.5):
+          beta = 0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -49,7 +49,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
                 = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-
+            print(coalition, coal_payoff, payoffs_vector)
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
@@ -69,7 +69,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
                 grand_coal_payoff_second = coal_payoff_second_game
                 grandc_payoff_vec_second = payoffs_vector_second_game
         # verifing properties for 1st game
-        check_first =  game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
+        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
 
         # verifing properties for 2nd game
         check_second = game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,

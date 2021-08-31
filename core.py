@@ -5,6 +5,11 @@ from scipy.optimize import linprog
 def find_core(params):
     # number of slots
     c, A_ub, A_eq, b_ub, b_eq, bounds, B, T_horizon = params
+    HS = 80000
+    A_ub = np.append(A_ub, [[0, 0, -1]], axis=0)
+    b_ub = np.append(b_ub, -HS)
+    B[:, -1] = [-HS, 0, 0]
+    print("c", c, "A_ub", A_ub, "A_eq", A_eq, "b_ub", b_ub, "b_eq", b_eq, "B", B, )
     primal_sol = linprog(-c, A_ub=-A_ub, b_ub=-b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='interior-point')
     capacity = primal_sol['x'][-1]
 
@@ -12,12 +17,11 @@ def find_core(params):
     A_td = np.transpose(np.concatenate((A_eq, A_ub)))
     b_ubd = c
     bounds0 = ((None, None),) * T_horizon
-    bounds1 = ((None, 0),) * T_horizon
+    bounds1 = ((None, 0),) * (T_horizon + 1)
     bounds = bounds0 + bounds1
-    print("c", c, "A_ub", A_ub, "A_eq", A_eq, "b_ub", b_ub, "b_eq", b_eq, "B", B, )
 
     dual_sol = linprog(c_d, A_ub=-A_td, b_ub=-b_ubd, bounds=bounds, method='interior-point')
-
+    print(dual_sol)
     # checking if the coal payoff of the primal and dual is the same
     if not (abs(-primal_sol['fun'] - dual_sol['fun']) < 0.1):
         print("ERROR: the payoff of primal and dual is not the same!\n")
@@ -32,7 +36,5 @@ def find_core(params):
 
     proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
     second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
-
-    print("payoff", payoff_vector, dual_sol['x'])
 
     return dual_sol, payoff_vector, capacity, coal_payoff_second, second_game_payoff_vector

@@ -36,7 +36,7 @@ class Game:
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
         tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
-        return tmp
+        return eta #tmp
 
     def _1_player_utility_t(self, resources, player_type):
         # if a real time SP, e.g. Peugeot
@@ -100,7 +100,7 @@ class Game:
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
         N = players_numb
-        B_eq = np.zeros(shape=(T_horizon, N))
+        B_eq = np.zeros(shape=(T_horizon+1, N))
 
         if simulation_type == "real":
             utility_f = self._2_player_utility_t
@@ -110,7 +110,7 @@ class Game:
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_eq = [0] * T_horizon
-            B_eq = np.zeros(shape=(2 * T_horizon, N))
+            B_eq = np.zeros(shape=(2 * T_horizon + 1, N))
         else:
             b_eq = []
             # we calculate utility function at t for a player only for SPs
@@ -127,6 +127,7 @@ class Game:
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
+
                 B_eq = np.insert(B_eq, t, tmp_arr, axis=0)
                 b_eq.append(used_resources)
 

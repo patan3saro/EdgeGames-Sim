@@ -6,7 +6,7 @@ import utils
 # Players number is mandatory
 # simulation_type
 def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-          beta = 0.5):
+         beta=0.5, eta=0.4, alpha=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -42,7 +42,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
         # we exclude the empty coalition
         for coalition in coalitions[1:]:
             # preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number)
+            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number, eta, alpha)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol, payoffs_vector, capacity, coal_payoff_second_game, payoffs_vector_second_game \
@@ -73,7 +73,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
 
         # verifing properties for 2nd game
         check_second = game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,
-        grandc_payoff_vec_second,  game_type="second")
+                                              grandc_payoff_vec_second, game_type="second")
         if check_first and check_second:
             print("Capacity:", capacity, "mCore")
             print("Coalition net incomes:", grand_coal_payoff)

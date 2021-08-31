@@ -4,13 +4,10 @@ from scipy.optimize import linprog
 
 def find_core(params):
     # number of slots
-    c, A_ub, A_eq, b_ub, b_eq, bounds, B, T_horizon = params
-    HS = 80000
-    A_ub = np.append(A_ub, [[0, 0, -1]], axis=0)
-    b_ub = np.append(b_ub, -HS)
-    B[:, -1] = [-HS, 0, 0]
-    print("c", c, "A_ub", A_ub, "A_eq", A_eq, "b_ub", b_ub, "b_eq", b_eq, "B", B, )
-    primal_sol = linprog(-c, A_ub=-A_ub, b_ub=-b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='interior-point')
+    c, A_ub, b_ub, bounds, B, T_horizon = params
+
+    print("c", c, "A_ub", A_ub, "b_ub", b_ub, "B", B, )
+    primal_sol = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method='interior-point')
     capacity = primal_sol['x'][-1]
 
     c_d = np.concatenate((b_eq, b_ub))

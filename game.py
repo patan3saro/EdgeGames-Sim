@@ -36,7 +36,7 @@ class Game:
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
         tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
-        return eta #tmp
+        return eta  # tmp
 
     def _1_player_utility_t(self, resources, player_type):
         # if a real time SP, e.g. Peugeot
@@ -132,33 +132,32 @@ class Game:
                                   np.zeros(shape=(1, 2 * T_horizon)))
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = np.concatenate(beta * np.ones(shape=(1, T_horizon)), (eta - alpha) * np.ones(shape=(1, T_horizon)),
-                           np.zeros(shape=(1, T_horizon)), -p_cpu)
+        c = np.concatenate(([beta] * T_horizon, [eta - alpha] * T_horizon,
+                            [0] * T_horizon, [-p_cpu]), axis=0)
 
-        matr_row1 = np.concatenate(np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
+        matr_row1 = np.concatenate((np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
+                                   - np.identity(T_horizon), np.zeros(shape=(T_horizon, 1))), axis=1)
+        matr_row2 = np.concatenate((np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
+                                   np.zeros(shape=(T_horizon, T_horizon + 1))), axis=1)
+        matr_row3 = np.concatenate((np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
                                    - np.identity(T_horizon),
-                                   np.zeros(shape=(T_horizon, 1), axis=0))
-        matr_row2 = np.concatenate(np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
-                                   np.zeros(shape=(T_horizon, T_horizon + 1)), axis=0)
-        matr_row3 = np.concatenate(np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
-                                   - np.identity(T_horizon),
-                                   np.zeros(shape=(T_horizon, 1), axis=0))
-        matr_row4 = np.concatenate(np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
+                                   np.zeros(shape=(T_horizon, 1))), axis=1)
+        matr_row4 = np.concatenate((np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
                                    np.zeros(shape=(T_horizon, T_horizon)),
-                                   np.zeros(shape=(T_horizon, 1), axis=0))
-        matr_row5 = np.concatenate(np.zeros(shape=(T_horizon, 2 * T_horizon)), np.identity(T_horizon),
-                                   -np.ones(shape=(T_horizon, 1), axis=0))
+                                   np.zeros(shape=(T_horizon, 1))), axis=1)
+        matr_row5 = np.concatenate((np.zeros(shape=(T_horizon, 2 * T_horizon)), np.identity(T_horizon),
+                                   -np.ones(shape=(T_horizon, 1))), axis=1)
 
-        A_ub = np.concatenate(matr_row1, matr_row2, matr_row3, matr_row4, matr_row5, axis=1)
+        A_ub = np.concatenate((matr_row1, matr_row2, matr_row3, matr_row4, matr_row5), axis=0)
 
         B = np.transpose(B_eq)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        bounds = ((0, None),) * (T_horizon + 1)
+        bounds = ((0, None),) * (3 * T_horizon + 1)
         params = (c, A_ub, b_ub, bounds, B, T_horizon)
         sol = core.find_core(params)
 
         return sol
-    
+
     def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
         print("Verifying properties of core (", game_type, "game )\n")
         if cp.is_an_imputation(coal_payoff, payoffs_vector):

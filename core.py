@@ -11,10 +11,10 @@ def find_core(params):
     capacity = primal_sol['x'][-1]
 
     c_d = b_ub
-    A_td = np.transpose(A_ub)
-    b_ubd = c
+    A_td = -np.transpose(A_ub)
+    b_ubd = -c
     bounds = ((0, None),) * (5 * T_horizon)  # attention!!!!!
-    #print("c", c_d, "A_ub", A_td, "b_ub", b_ubd, "B", B, )
+    # print("c", c_d, "A_ub", A_td, "b_ub", b_ubd, "B", B, )
     dual_sol = linprog(c_d, A_ub=A_td, b_ub=b_ubd, bounds=bounds, method='interior-point')
 
     # checking if the coal payoff of the primal and dual is the same

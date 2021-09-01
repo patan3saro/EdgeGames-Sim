@@ -28,8 +28,8 @@ def find_core(params):
     # second game values
 
     coal_payoff_second = c[0] * np.sum(primal_sol['x'][:-1])
-    print("Optimal varibles primal", primal_sol['x'])
+    #print("Optimal varibles primal", primal_sol['x'])
     proportions_array = payoff_vector / (np.sum(payoff_vector) + 0.0000001)
     second_game_payoff_vector = np.multiply(proportions_array, coal_payoff_second)
-
+    print("AAAAAAAAAAAAAAAAAAAAAAALLLLLl", dual_sol['fun'], payoff_vector)
     return dual_sol, payoff_vector, capacity, coal_payoff_second, second_game_payoff_vector

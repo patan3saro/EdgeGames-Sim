@@ -45,6 +45,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
             params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number, chi, alpha)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
+            print(coalition)
             sol, payoffs_vector, capacity, coal_payoff_second_game, payoffs_vector_second_game \
                 = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff

@@ -36,7 +36,7 @@ class Game:
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
         tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
-        return eta  # tmp
+        return tmp
 
     def _1_player_utility_t(self, resources, player_type):
         # if a real time SP, e.g. Peugeot
@@ -94,7 +94,7 @@ class Game:
         return converted_load
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb, eta, alpha = self.get_params()
+        p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb, chi, alpha = self.get_params()
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
         N = players_numb
@@ -134,7 +134,7 @@ class Game:
                                   np.zeros(shape=(1, 2 * T_horizon))), axis=1)
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = np.concatenate(([beta] * T_horizon, [eta - alpha] * T_horizon,
+        c = np.concatenate(([beta] * T_horizon, [chi - alpha] * T_horizon,
                             [0] * T_horizon, [-p_cpu]), axis=0)
 
         matr_row1 = np.concatenate((np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),

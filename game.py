@@ -6,32 +6,7 @@ import core
 
 
 class Game:
-
-    # useful functions to create the utility at time t for each player
-    def _f(self, resources, a):
-        # we must saturate the number of resources to obtain  solution>=0
-        # in fact one of the intersection with axis x (y=0) is in x=0 --> y=0
-        # the other one is in x=2a+100 (found solving the equation)
-        # h determines the spread of the curve
-        # and we need a great spread because the number of resources
-        # can be in the order of 10^3 or 10^4
-        q = 0.0001
-        resources = min(resources, (2 * a + (1 / q)))
-        # resources is by default > 0 thanks to the bounds in minimize function
-        # so we will have always _f>=0
-        return q * (a ** 2) + resources - q * (resources - a) ** 2
-
-    def _g(self, load):
-        # h (height) determine the saturation value
-        c = 50
-        # this lowers the function
-        l = 0.5
-        # determines the slope og the function
-        s = 0.03
-        # m moves to the right  if >0 else to the left the function
-        m = 5
-        return (c / (1 + math.e ** (- (load * s - m)))) - l
-
+    
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
@@ -69,65 +44,53 @@ class Game:
         return converted_load
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha = self.get_params()
+        p_cpu, T_horizon, coalition, _, beta_rt, beta_nrt, players_numb, chi, alpha = self.get_params()
         # matrix with all the b for each player
-        # rows = players  // columns = time steps in time horizon
-        N = players_numb
 
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
-            b_ub = [0] * 5 * T_horizon
+            b_ub = [0] * 4
         else:
-            b_tmp = []
+            b_ub = []
             # we calculate utility function at t for a player only for SPs
             # coalition is a tuple that specify the type of player also
-            for t in range(T_horizon):
+            for player in coalition[1:]:
                 # in the paper y_t^S
-                used_resources = 0
-                tmp_arr = [0] * players_numb
-                for player in coalition[1:]:
+                for t in range(T_horizon):
                     player_type = player[1]
                     tmp0 = self._player_utility_t(player_type)
-                    used_resources += tmp0
-                    tmp_arr[player[0]] = tmp0
+                    b_ub.append(tmp0)
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
 
-                b_tmp.append(used_resources)
-
-            b_ub = np.concatenate((np.zeros(shape=(1, T_horizon)), np.array([b_tmp]), - np.array([b_tmp]),
-                                  np.zeros(shape=(1, 2 * T_horizon))), axis=1)
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
-        c = np.concatenate(([beta] * T_horizon, [chi - alpha] * T_horizon,
-                            [0] * T_horizon, [-p_cpu]), axis=0)
+        # Creating c vector
+        c = np.array([0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt, 0, 0, 0, -p_cpu])
+        b = np.array([0, 0] + b_ub + [0, 0, 0, 0, 0, 0, 0])
 
-        matr_row1 = np.concatenate((np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
-                                   - np.identity(T_horizon), np.zeros(shape=(T_horizon, 1))), axis=1)
-        matr_row2 = np.concatenate((np.identity(T_horizon), np.zeros(shape=(T_horizon, T_horizon)),
-                                   np.zeros(shape=(T_horizon, T_horizon + 1))), axis=1)
-        matr_row3 = np.concatenate((np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
-                                   - np.identity(T_horizon),
-                                   np.zeros(shape=(T_horizon, 1))), axis=1)
-        matr_row4 = np.concatenate((np.zeros(shape=(T_horizon, T_horizon)), np.identity(T_horizon),
-                                   np.zeros(shape=(T_horizon, T_horizon)),
-                                   np.zeros(shape=(T_horizon, 1))), axis=1)
-        matr_row5 = np.concatenate((np.zeros(shape=(T_horizon, 2 * T_horizon)), np.identity(T_horizon),
-                                   -np.ones(shape=(T_horizon, 1))), axis=1)
+        # Creating A matrix
 
-        A_ub = np.concatenate((matr_row1, matr_row2, matr_row3, matr_row4, matr_row5), axis=0)
+        identity = np.identity(6)
+        A1 = np.concatenate((identity, identity, identity, identity), axis=0)
+        ones_vec = np.transpose([[-1, -1, -1, -1, -1, -1]])
+        due_zeri = np.zeros(shape=(6, 2))
+        zero_vec = np.transpose([[0, 0, 0, 0, 0, 0]])
+        pippo = np.concatenate((ones_vec, due_zeri, zero_vec), axis=0)
+        print(pippo)
+        A2 = np.concatenate((np.zeros(shape=(6, 4)), np.concatenate((ones_vec, due_zeri, zero_vec), axis=0)), axis=0)
+        print(A2)
 
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (3 * T_horizon + 1)
-        params = (c, A_ub, b_ub, bounds, T_horizon)
+        params = (c, A1, b_ub, bounds, T_horizon)
         sol = core.find_core(params)
 
         return sol
 
     def is_convex(self, coalitions_infos):
-       return cp.is_convex(coalitions_infos)
-
+        return cp.is_convex(coalitions_infos)
 
     def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
         print("Verifying properties of core (", game_type, "game )\n")

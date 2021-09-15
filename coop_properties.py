@@ -40,22 +40,17 @@ def best_coalition(self, info_all_coalitions):
     return best_coalition
 
 
-def is_convex(coalitions_infos, game_type):
+def is_convex(coalitions_infos):
     convexity = []
-    tmp = ""
     union_value = 0
     intersection_value = 0
-    if game_type == "first":
-        tmp = "coalitional_payoff"
-    elif game_type == "second":
-        tmp = "second_game_coalitional_payoff"
 
     for i in range(len(coalitions_infos)):
         for j in (range(i + 1, len(coalitions_infos))):
             coal1 = coalitions_infos[i]["coalition"]
             coal2 = coalitions_infos[j]["coalition"]
-            coal1_value = coalitions_infos[i][tmp]
-            coal2_value = coalitions_infos[j][tmp]
+            coal1_value = coalitions_infos[i]["coalitional_payoff"]
+            coal2_value = coalitions_infos[j]["coalitional_payoff"]
 
             # searching for the union and intersection coalition
             union = tuple(set(coal1).union(coal2))
@@ -66,12 +61,12 @@ def is_convex(coalitions_infos, game_type):
             else:
                 for k in coalitions_infos:
                     if k["coalition"] == intersection:
-                        intersection_value = k[tmp]
+                        intersection_value = k["coalitional_payoff"]
 
                     if k["coalition"] == union:
-                        union_value = k[tmp]
+                        union_value = k["coalitional_payoff"]
                         print(k["coalition"], union)
-                        print(k[tmp])
+                        print(k["coalitional_payoff"])
                 # round values for the comparison
                 if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
                     convexity.append(True)

@@ -4,8 +4,7 @@ import utils
 
 # by default player 0 is the NO
 # Players number is mandatory
-# simulation_type
-def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
+def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
          beta=0.5, chi=0.4, alpha=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -42,7 +41,7 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
         # we exclude the empty coalition
         for coalition in coalitions[1:]:
             # preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition, len(coalition), simulation_type, beta, players_number, chi, alpha)
+            params = (p_cpu, T_horizon, coalition, len(coalition), beta, players_number, chi, alpha)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             print(coalition)
@@ -69,13 +68,10 @@ def main(players_number=3, simulation_type="real", rt_players=None, p_cpu=0.05, 
                 grandc_payoff_vec = payoffs_vector
                 grand_coal_payoff_second = coal_payoff_second_game
                 grandc_payoff_vec_second = payoffs_vector_second_game
-        # verifing properties for 1st game
+
         check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
 
-        # verifing properties for 2nd game
-        check_second = game.verify_properties(all_coal_payoffs_second, grand_coal_payoff_second,
-                                              grandc_payoff_vec_second, game_type="second")
-        if check_first and check_second:
+        if check_first:
             print("Capacity:", capacity, "mCore")
             print("Coalition net incomes:", grand_coal_payoff)
             print("Coalition payment:", grand_coal_payoff_second - grand_coal_payoff)

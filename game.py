@@ -38,32 +38,7 @@ class Game:
         tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
         return tmp
 
-    def _1_player_utility_t(self, resources, player_type):
-        # if a real time SP, e.g. Peugeot
-        if player_type == "rt":
-            # gets a great benefit from resources at the edge with this a
-            a = 0.2
-            # we must generate a load that is comparable
-            # with the curve of the load benefit _g
-            # e.g. choose eta=height_of_g/1.2
-            # eta and sigma must be positive and eta >= sigma/2
-            eta = 500
-            sigma = 50
-            load = self._generate_load(eta, sigma)
-        # if not real time SP, e.g. Netflix
-        else:
-            # gets less benefit
-            a = 0.005
-            # we must generate a load that is comparable
-            # with the curve of the load benefit _g
-            # e.g. choose eta=height_of_g/1.1
-            # eta and sigma must be positive and eta >= sigma/2
-            eta = 140
-            sigma = 20
-            load = self._generate_load(eta, sigma)
-        return self._f(resources, a) * self._g(load)
-
-    def _2_player_utility_t(self, player_type):
+    def _player_utility_t(self, player_type):
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
@@ -94,20 +69,14 @@ class Game:
         return converted_load
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, simulation_type, beta, players_numb, chi, alpha = self.get_params()
+        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha = self.get_params()
         # matrix with all the b for each player
         # rows = players  // columns = time steps in time horizon
         N = players_numb
-        B_tmp = []
-        if simulation_type == "real":
-            utility_f = self._2_player_utility_t
-        else:
-            utility_f = self._1_player_utility_t
 
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             b_ub = [0] * 5 * T_horizon
-            B = np.zeros(shape=(5 * T_horizon, N))
         else:
             b_tmp = []
             # we calculate utility function at t for a player only for SPs
@@ -118,18 +87,15 @@ class Game:
                 tmp_arr = [0] * players_numb
                 for player in coalition[1:]:
                     player_type = player[1]
-                    tmp0 = utility_f(player_type)
+                    tmp0 = self._player_utility_t(player_type)
                     used_resources += tmp0
                     tmp_arr[player[0]] = tmp0
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
 
-                B_tmp.append(tmp_arr)
                 b_tmp.append(used_resources)
-            B_tmp = np.array(B_tmp)
 
-            B = np.concatenate((np.zeros(shape=(T_horizon, N)), B_tmp, -B_tmp, np.zeros(shape=(2*T_horizon, N))))
             b_ub = np.concatenate((np.zeros(shape=(1, T_horizon)), np.array([b_tmp]), - np.array([b_tmp]),
                                   np.zeros(shape=(1, 2 * T_horizon))), axis=1)
         # cost vector with benefit factor and cpu price
@@ -152,13 +118,16 @@ class Game:
 
         A_ub = np.concatenate((matr_row1, matr_row2, matr_row3, matr_row4, matr_row5), axis=0)
 
-        B = np.transpose(B)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (3 * T_horizon + 1)
-        params = (c, A_ub, b_ub, bounds, B, T_horizon)
+        params = (c, A_ub, b_ub, bounds, T_horizon)
         sol = core.find_core(params)
 
         return sol
+
+    def is_convex(self, coalitions_infos):
+       return cp.is_convex(coalitions_infos)
+
 
     def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
         print("Verifying properties of core (", game_type, "game )\n")

@@ -8,6 +8,7 @@ def _is_individually_rational(payoff_vector):
 
 
 def _is_efficient(coal_payoff, payoff_vector):
+    print(coal_payoff,sum(payoff_vector))
     # we consider the presence of some approximation loss
     return abs(np.sum(payoff_vector) - coal_payoff) <= 0.1
 
@@ -17,11 +18,12 @@ def is_an_imputation(coal_payoff, payoff_vector):
 
 
 def is_group_rational(all_coal_payoffs, coal_payoff):
-    return abs(max(all_coal_payoffs) - coal_payoff) <= 0.1
+
+    return abs(min(all_coal_payoffs) - coal_payoff) <= 0.1
 
 
 # The criterion is to compare the payoffs vectors
-def best_coalition(self, info_all_coalitions):
+def best_coalition(info_all_coalitions):
     best_coalition = {}
     for i in range(len(info_all_coalitions)):
         for j in range(1, len(info_all_coalitions)):

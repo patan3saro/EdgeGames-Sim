@@ -70,7 +70,6 @@ class Game:
         # we use a minimize-function, so to maximize we minimize the opposite
         # Creating c vector
         c = np.array([0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt, 0, 0, 0, -p_cpu])
-        print(b)
         # Creating A matrix
         identity = np.identity(6)
         A = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [
@@ -95,16 +94,15 @@ class Game:
             b.append(info["coalitional_payoff"])
         coefficients_min_y = [0] * (len(A[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, A_ub=A, b_ub=b)
-        print(A_eq, b_eq, A, b)
-        print("AAA", res)
-        print(infos_all_coal_one_config)
+
+        return res['x']
 
     def is_convex(self, coalitions_infos):
         return cp.is_convex(coalitions_infos)
 
-    def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector, game_type):
-        print("Verifying properties of core (", game_type, "game )\n")
-        if cp.is_an_imputation(coal_payoff, payoffs_vector):
+    def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector):
+        print("Verifying properties of payoffs \n")
+        if cp.is_an_imputation(-coal_payoff, payoffs_vector):
             print("Core is an imputation (efficiency + individual rationality)!\n")
             print("Check if payoff vector is group rational...\n")
             if cp.is_group_rational(all_coal_payoff, coal_payoff):

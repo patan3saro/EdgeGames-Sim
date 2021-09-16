@@ -9,5 +9,5 @@ def find_core(params):
     # print("c", c, "A_ub", A_ub, "b_ub", b_ub, "B", B)
     primal_sol = linprog(-c, A_ub=A_ub, b_ub=b_ub, method='interior-point')
     capacity = primal_sol['x'][-1]
-
+    print(primal_sol)
     return primal_sol

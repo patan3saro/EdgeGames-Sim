@@ -61,7 +61,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             if coalition == grand_coalition:
                 grand_coal_payoff = coal_payoff
 
-        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, game_type="first")
+        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff,[0,0,0], game_type="first")
 
         if check_first:
             print("Coalition net incomes:", grand_coal_payoff)

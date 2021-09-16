@@ -45,8 +45,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             print(coalition)
-            sol, payoffs_vector, capacity, coal_payoff_second_game, payoffs_vector_second_game \
-                = game.calculate_coal_payoff()
+            sol = game.calculate_coal_payoff()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
 
@@ -55,29 +54,17 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
                 "horizon": horizon
             }, "coalition": coalition,
                 "coalitional_payoff": coal_payoff,
-                "second_game_coalitional_payoff": coal_payoff_second_game,
-                "capacity": capacity,
-                "core": payoffs_vector
             }
             # keeping the best coalition for a given configuration
             infos_all_coal_one_config.append(info_dict)
             all_coal_payoffs.append(coal_payoff)
-            all_coal_payoffs_second.append(coal_payoff_second_game)
             if coalition == grand_coalition:
                 grand_coal_payoff = coal_payoff
-                grandc_payoff_vec = payoffs_vector
-                grand_coal_payoff_second = coal_payoff_second_game
-                grandc_payoff_vec_second = payoffs_vector_second_game
 
-        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, grandc_payoff_vec, game_type="first")
+        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, game_type="first")
 
         if check_first:
-            print("Capacity:", capacity, "mCore")
             print("Coalition net incomes:", grand_coal_payoff)
-            print("Coalition payment:", grand_coal_payoff_second - grand_coal_payoff)
-            print("Players gross incomes:", grand_coal_payoff_second)
-            print("Players net incomes:", grandc_payoff_vec)
-            print("Players payment:", grandc_payoff_vec_second - grandc_payoff_vec)
 
         all_infos.append(infos_all_coal_one_config)
         tmp_payoff = 0  # best_coalition["coalitional_payoff"]

@@ -6,7 +6,7 @@ import core
 
 
 class Game:
-    
+
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
         # WARNING: randomness generates problems with the optimization
@@ -73,18 +73,15 @@ class Game:
         # Creating A matrix
 
         identity = np.identity(6)
-        A1 = np.concatenate((identity, identity, identity, identity), axis=0)
-        ones_vec = np.transpose([[-1, -1, -1, -1, -1, -1]])
-        due_zeri = np.zeros(shape=(6, 2))
-        zero_vec = np.transpose([[0, 0, 0, 0, 0, 0]])
-        pippo = np.concatenate((ones_vec, due_zeri, zero_vec), axis=0)
-        print(pippo)
-        A2 = np.concatenate((np.zeros(shape=(6, 4)), np.concatenate((ones_vec, due_zeri, zero_vec), axis=0)), axis=0)
-        print(A2)
-
+        A = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [
+            0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, -1, 0, 0, 0], [0, 1, 0, 0, 0, 0, -1, 0, 0, 0], [
+                 0, 0, 1, 0, 0, 0, 0, -1, 0, 0], [0, 0, 0, 1, 0, 0, -1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, -1, 0],
+             [0, 0, 0, 0, 0, 1, 0, 0, -1, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, -1]]
+        A = np.matrix(A)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        bounds = ((0, None),) * (3 * T_horizon + 1)
-        params = (c, A1, b_ub, bounds, T_horizon)
+        bounds = ((0, None),) * (2 * players_numb * T_horizon + 1)
+        params = (c, A, b, bounds, T_horizon)
         sol = core.find_core(params)
 
         return sol
@@ -115,11 +112,6 @@ class Game:
         coalition_players_number = len(best_coalition)
         x_payoffs = []
         N_factorial = math.factorial(players_number)
-        tmp0 = ""
-        if game_type == "first":
-            tmp0 = "coalitional_payoff"
-        elif game_type == "second":
-            tmp0 = "second_game_coalitional_payoff"
 
         for player in coalitions[-1]:
             coalitions_dict_without_i = []
@@ -133,7 +125,7 @@ class Game:
             for S in coalitions_dict_without_i:
                 for q in coalitions_dict_with_i:
                     if tuple(set(S["coalition"]).symmetric_difference(q["coalition"])) == (player,):
-                        contribution = q[tmp0] - S[tmp0]
+                        contribution = q["coalitional_payoff"] - S["coalitional_payoff"]
                         tmp = math.factorial(len(S["coalition"])) * math.factorial(
                             players_number - len(S["coalition"]) - 1) * contribution
                         summation = summation + tmp

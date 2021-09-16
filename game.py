@@ -3,6 +3,7 @@ import numpy as np
 
 import coop_properties as cp
 import core
+from scipy.optimize import linprog
 
 
 class Game:
@@ -84,6 +85,17 @@ class Game:
         sol = core.find_core(params)
 
         return sol
+
+    def calculate_core(self, infos_all_coal_one_config):
+        A_eq = [[1, 1, 1]]
+        b_eq = infos_all_coal_one_config[-1]["coalitional_payoff"]
+        A = [[-1, 0, 0], [0, -1, 0], [0, 0, -1], [-1, -1, 0], [-1, 0, -1], [0, -1, -1]]
+        b = []
+        for info in infos_all_coal_one_config:
+            b.append(-info["coalitional_payoff"])
+        coefficients_min_y = [0] * len(A[0])
+        res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, A_ub=A, b_ub=b)
+        print(res)
 
     def is_convex(self, coalitions_infos):
         return cp.is_convex(coalitions_infos)

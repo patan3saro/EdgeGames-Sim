@@ -4,7 +4,7 @@ import utils
 
 # by default player 0 is the NO
 # Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
+def main(players_number=3, rt_players=None, p_cpu=1, horizon=1, type_slot_t="min",
          beta_rt=0.5, beta_nrt=0.2, chi=0.4, alpha=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2

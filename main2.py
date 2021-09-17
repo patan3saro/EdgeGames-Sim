@@ -82,13 +82,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
                                                    coalitions)
 
         print("Shapley value is in the core, the fair payoff is:", payoff_vector, "\n")
-        print("Checking if the payoff is efficient...")
-        # we don'nt consider the exact difference but a little tolerance
-        # since there are approx errors
-        # if game.is_efficient():
-        #    print("The payoff is efficient\n")
-        # else:
-        #    print("The payoff is not efficient\n")
+
     else:
         print("The game is not convex!\n")
         print("A solution in the core (not fair) is the result of the system of inequalities:", payoff_vector, "\n")

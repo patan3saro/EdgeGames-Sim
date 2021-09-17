@@ -148,11 +148,11 @@ class Game:
         p_cpu, _, _, _, beta_rt, beta_nrt, players_numb, _, _ = self.get_params()
         beta_vec = [0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt]
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [0, 0, 0, 1, 1, 1], [1, 1, 1, 0, 0, 0]]
-        print(payoff_vector)
         b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w, beta_vec), p_cpu*Capacity]
-
+        print()
         coefficients_min_y = [0] * (len(A_eq[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq)
+        print(res)
         return res[0:3], res[3:]
 
     # GETTERS AND SETTERS

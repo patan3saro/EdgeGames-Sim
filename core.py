@@ -6,5 +6,5 @@ def find_core(params):
     c, A_ub, b_ub, bounds, T_horizon = params
     # print("c", c, "A_ub", A_ub, "b_ub", b_ub, "B", B)
     primal_sol = linprog(-c, A_ub=A_ub, b_ub=b_ub, method='interior-point')
-    #print(primal_sol)
+
     return primal_sol

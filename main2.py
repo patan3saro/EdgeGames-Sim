@@ -89,7 +89,9 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")
-    print(game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1]))
+    res = game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1])
+    print("Revenue array:", res[0], "\n")
+    print("Payment array:", res[1], "\n")
 
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@ def _is_individually_rational(payoff_vector):
 
 
 def _is_efficient(coal_payoff, payoff_vector):
+    print(coal_payoff)
     # we consider the presence of some approximation loss
     return abs(np.sum(payoff_vector) - coal_payoff) <= 0.1
 

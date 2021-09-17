@@ -149,7 +149,7 @@ class Game:
         beta_vec = [0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt]
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0]]
         b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w, beta_vec)]
-        print()
+
         coefficients_min_y = [0] * (len(A_eq[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq)
         return res['x'][0:3], res['x'][3:]

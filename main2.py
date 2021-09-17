@@ -85,7 +85,8 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
 
     else:
         print("The game is not convex!\n")
-        print("A solution in the core (not fair) is the result of the system of inequalities:", payoff_vector, "\n")
+        print("A solution in the core (not fair) is the result \n"
+              "of the system of inequalities:", payoff_vector, "\n")
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")

@@ -39,7 +39,6 @@ class Game:
             load = self._generate_load(eta, sigma)
         # benefit factor dollars per mCore per minute
         # see: https://edge.network/en/pricing/
-        beta = self.get_params()[5]
         # converting load in needed resources
         converted_load = load * conversion_factor
         return converted_load

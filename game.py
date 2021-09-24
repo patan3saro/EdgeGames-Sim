@@ -10,6 +10,7 @@ class Game:
 
     # this function generates load randomly
     def _generate_load(self, eta, sigma):
+        np.random.seed(10)
         # WARNING: randomness generates problems with the optimization
         tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
         return tmp
@@ -70,12 +71,30 @@ class Game:
         # Creating c vector
         c = np.array([0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt, 0, 0, 0, -p_cpu])
         # Creating A matrix
-        identity = np.identity(6)
-        A = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [
-            0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, -1, 0, 0, 0], [0, 1, 0, 0, 0, 0, -1, 0, 0, 0], [
-                 0, 0, 1, 0, 0, 0, 0, -1, 0, 0], [0, 0, 0, 1, 0, 0, -1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, -1, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, -1, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, -1]]
+
+        identity = np.identity(players_numb * T_horizon)
+        zeros = np.zeros(shape=(players_numb * T_horizon, players_numb * T_horizon))
+        zeros_column = np.zeros(shape=(players_numb * T_horizon,1))
+
+        mega_row_A0 = np.concatenate((identity, zeros, zeros, zeros_column), axis=1)
+
+        tmp0 =
+        mega_row_A1 = np.concatenate((identity, zeros, tmp0, zeros_column), axis=1)
+        print(mega_row_A0)
+
+        A = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+             [1, 0, 0, 0, 0, 0, -1, 0, 0, 0],
+             [0, 1, 0, 0, 0, 0, -1, 0, 0, 0],
+             [0, 0, 1, 0, 0, 0, 0, -1, 0, 0],
+             [0, 0, 0, 1, 0, 0, -1, 0, 0, 0],
+             [0, 0, 0, 0, 1, 0, 0, 0, -1, 0],
+             [0, 0, 0, 0, 0, 1, 0, 0, -1, 0],
+             [0, 0, 0, 0, 0, 0, 1, 1, 1, -1]]
         A = np.matrix(A)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (2 * players_numb * T_horizon + 1)

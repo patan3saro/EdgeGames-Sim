@@ -5,7 +5,7 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-         beta_rt=0.5, beta_nrt=0, chi=0.4, alpha=0.5):
+         beta_rt=0.5, beta_nrt=0.2, chi=0.4, alpha=0.5):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -29,6 +29,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     best_of_the_best_coal = {}
     all_infos = []
     payoff_vector = []
+    PIPPO = 0
 
     game_type = ("first", "second")
     for configuration in configurations:
@@ -42,7 +43,9 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
-
+            if coalition == coalitions[-1]:
+                PIPPO = sol['x'][-1] * p_cpu
+                resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
 
@@ -93,6 +96,11 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     res = game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1])
     print("Revenue array:", res[0], "\n")
     print("Payment array:", res[1], "\n")
+    if abs(PIPPO - sum(res[1])) > 0.001:
+        print("ERROR: the sum of single payments (for each players) doesn't match the  ")
+
+    else:
+        print("Total payment and sum of single payments are equal!\n")
 
 
 if __name__ == '__main__':

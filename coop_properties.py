@@ -67,8 +67,7 @@ def is_convex(coalitions_infos):
 
                     if k["coalition"] == union:
                         union_value = k["coalitional_payoff"]
-                        print(k["coalition"], union)
-                        print(k["coalitional_payoff"])
+
                 # round values for the comparison
                 if math.ceil(union_value) >= coal1_value + coal2_value - intersection_value:
                     convexity.append(True)

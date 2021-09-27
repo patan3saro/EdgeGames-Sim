@@ -5,7 +5,8 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-         beta=0.5, chi=0.4, alpha=0.5, HC = 10**10):
+         beta=0.5, chi=0, alpha=0.5, HC=100000000
+         ):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -68,7 +69,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
 
         if check_first:
             print("Coalition net incomes:", -grand_coal_payoff)
-
+            print("Capacity:", sol['x'][-1], "\n")
         all_infos.append(infos_all_coal_one_config)
         tmp_payoff = 0  # best_coalition["coalitional_payoff"]
 
@@ -93,12 +94,12 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")
-    res = game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1])
+    # res = game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1])
+    res = 0
     print("Revenue array:", res[0], "\n")
     print("Payment array:", res[1], "\n")
     if abs(PIPPO - sum(res[1])) > 0.001:
         print("ERROR: the sum of single payments (for each players) doesn't match the  ")
-
     else:
         print("Total payment and sum of single payments are equal!\n")
 

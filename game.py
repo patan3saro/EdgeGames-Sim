@@ -172,7 +172,7 @@ class Game:
 
     def how_much_rev_paym(self, payoff_vector, w, Capacity):
         p_cpu, _, _, _, beta, players_numb, _, _, _ = self.get_params()
-        beta_vec = [0, 0, beta_rt, b
+        beta_vec = [0, 0, beta]
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0]]
         b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w, beta_vec)]
 

@@ -5,7 +5,7 @@ import utils
 # by default player 0 is the NO
 # Players number is mandatory
 def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-         beta_rt=0.5, beta_nrt=0.2, chi=0.4, alpha=0.5):
+         beta=0.5, chi=0.4, alpha=0.5, HC = 10**10):
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
     # each coalition element is a tuple player = (id, type)
@@ -39,7 +39,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
         # we exclude the empty coalition
         for coalition in coalitions[1:]:
             # preparing parameters to calculate payoff
-            params = (p_cpu, T_horizon, coalition, len(coalition), beta_rt, beta_nrt, players_number, chi, alpha)
+            params = (p_cpu, T_horizon, coalition, len(coalition), beta, players_number, chi, alpha, HC)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()

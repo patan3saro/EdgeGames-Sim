@@ -45,9 +45,9 @@ class Game:
         return converted_load
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, beta_rt, beta_nrt, players_numb, chi, alpha = self.get_params()
+        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC = self.get_params()
         # matrix with all the b for each player
-        b = [0] * (2 * players_numb * T_horizon + 1)
+        b = [0] * (players_numb * T_horizon)
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             pass
@@ -60,6 +60,7 @@ class Game:
                 for t in range(T_horizon):
                     player_type = player[1]
                     tmp0 = self._player_utility_t(player_type)
+                    print(tmp0)
                     b[indx] = tmp0
                     indx += 1
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
@@ -69,7 +70,10 @@ class Game:
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         # Creating c vector
-        c = np.array([0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt, 0, 0, 0, -p_cpu])
+        tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
+        tmp1 = -chi * np.ones(shape=(players_numb * T_horizon))
+        tmp2 = np.zeros(shape=(players_numb))
+        c = np.concatenate((tmp0, tmp1, tmp2, [-p_cpu]), axis=0)
         # Creating A matrix
         identity = np.identity(players_numb * T_horizon)
         zeros = np.zeros(shape=(players_numb * T_horizon, players_numb * T_horizon))
@@ -98,10 +102,10 @@ class Game:
         mega_row_A4 = np.concatenate((tmp0, tmp1, tmp2), axis=1)
 
         A = np.concatenate((mega_row_A0, mega_row_A1, mega_row_A2, mega_row_A3, mega_row_A4), axis=0)
-        print(A)
-        A = np.matrix(A)
+        tmp0 = np.zeros(shape=(players_numb * T_horizon))
+        b = np.concatenate((b, tmp0, b, tmp0, [0, HC]), axis=0)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        bounds = ((0, None),) * (2 * players_numb * T_horizon + 1)
+        bounds = ((0, None),) * (2 * players_numb * T_horizon + players_numb + 1)
         params = (c, A, b, bounds, T_horizon)
         sol = core.find_core(params)
 
@@ -167,8 +171,8 @@ class Game:
         return x_payoffs
 
     def how_much_rev_paym(self, payoff_vector, w, Capacity):
-        p_cpu, _, _, _, beta_rt, beta_nrt, players_numb, _, _ = self.get_params()
-        beta_vec = [0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt]
+        p_cpu, _, _, _, beta, players_numb, _, _, _ = self.get_params()
+        beta_vec = [0, 0, beta_rt, b
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0]]
         b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w, beta_vec)]
 

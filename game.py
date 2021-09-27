@@ -71,30 +71,34 @@ class Game:
         # Creating c vector
         c = np.array([0, 0, beta_rt, beta_rt, beta_nrt, beta_nrt, 0, 0, 0, -p_cpu])
         # Creating A matrix
-
         identity = np.identity(players_numb * T_horizon)
         zeros = np.zeros(shape=(players_numb * T_horizon, players_numb * T_horizon))
-        zeros_column = np.zeros(shape=(players_numb * T_horizon,1))
+        zeros_column = np.zeros(shape=(players_numb * T_horizon, 1))
+        tmp0 = np.zeros(shape=(players_numb * T_horizon, players_numb))
+        mega_row_A0 = np.concatenate((identity, zeros, tmp0, zeros_column), axis=1)
 
-        mega_row_A0 = np.concatenate((identity, zeros, zeros, zeros_column), axis=1)
+        tmp = 0
+        for col in range(players_numb):
+            for row in range(T_horizon):
+                tmp0[row + tmp, col] = -1
+            tmp += T_horizon
 
-        tmp0 =
         mega_row_A1 = np.concatenate((identity, zeros, tmp0, zeros_column), axis=1)
-        print(mega_row_A0)
 
-        A = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-             [1, 0, 0, 0, 0, 0, -1, 0, 0, 0],
-             [0, 1, 0, 0, 0, 0, -1, 0, 0, 0],
-             [0, 0, 1, 0, 0, 0, 0, -1, 0, 0],
-             [0, 0, 0, 1, 0, 0, -1, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, -1, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, -1, 0],
-             [0, 0, 0, 0, 0, 0, 1, 1, 1, -1]]
+        mega_row_A2 = np.concatenate((zeros, identity, -tmp0, zeros_column), axis=1)
+
+        tmp = np.zeros(shape=(players_numb * T_horizon, players_numb))
+        mega_row_A3 = np.concatenate((zeros, identity, tmp, zeros_column), axis=1)
+
+        tmp0 = np.zeros(shape=(2, 2 * players_numb * T_horizon))
+        tmp1 = np.ones(shape=(1, players_numb))
+        tmp2 = np.zeros(shape=(1, players_numb))
+        tmp1 = np.concatenate((tmp1, tmp2), axis=0)
+        tmp2 = np.transpose(np.matrix([[-1, 1]]))
+        mega_row_A4 = np.concatenate((tmp0, tmp1, tmp2), axis=1)
+
+        A = np.concatenate((mega_row_A0, mega_row_A1, mega_row_A2, mega_row_A3, mega_row_A4), axis=0)
+        print(A)
         A = np.matrix(A)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
         bounds = ((0, None),) * (2 * players_numb * T_horizon + 1)

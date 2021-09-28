@@ -49,7 +49,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
                 resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = sol['fun']
-
+            print("Payoff: ", -coal_payoff, "coalition", coalition)
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
@@ -71,11 +71,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             print("Coalition net incomes:", -grand_coal_payoff)
             print("Capacity:", sol['x'][-1], "\n")
         all_infos.append(infos_all_coal_one_config)
-        tmp_payoff = 0  # best_coalition["coalitional_payoff"]
 
-        # if tmp_payoff > best_max_payoff:
-        #    best_of_the_best_coal = best_coalition
-        #    best_max_payoff = tmp_payoff
     # choosing info of all coalition for the best config
 
     print("Checking if the game is convex...\n")
@@ -94,8 +90,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")
-    # res = game.how_much_rev_paym(payoff_vector, sol['x'][0:6], sol['x'][-1])
-    res = 0
+    res = game.how_much_rev_paym(payoff_vector, sol['x'])
     print("Revenue array:", res[0], "\n")
     print("Payment array:", res[1], "\n")
     if abs(PIPPO - sum(res[1])) > 0.001:

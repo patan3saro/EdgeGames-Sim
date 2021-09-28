@@ -60,7 +60,6 @@ class Game:
                 for t in range(T_horizon):
                     player_type = player[1]
                     tmp0 = self._player_utility_t(player_type)
-                    print(tmp0)
                     b[indx] = tmp0
                     indx += 1
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
@@ -170,12 +169,15 @@ class Game:
 
         return x_payoffs
 
-    def how_much_rev_paym(self, payoff_vector, w, Capacity):
-        p_cpu, _, _, _, beta, players_numb, _, _, _ = self.get_params()
-        beta_vec = [0, 0, beta]
+    def how_much_rev_paym(self, payoff_vector, w):
+        p_cpu, T_horizon, _, _, beta, players_numb, chi, _, _= self.get_params()
+        # Creating c vector
+        tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
+        tmp1 = -chi * np.ones(shape=(players_numb * T_horizon))
+        tmp2 = np.zeros(shape=(players_numb))
+        beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0]]
-        b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w, beta_vec)]
-
+        b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w[:15], beta_vec)]
         coefficients_min_y = [0] * (len(A_eq[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq)
         return res['x'][0:3], res['x'][3:]

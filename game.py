@@ -114,14 +114,15 @@ class Game:
 
     def calculate_core(self, infos_all_coal_one_config):
         A_eq = [[1, 1, 1]]
-        b_eq = -infos_all_coal_one_config[-1]["coalitional_payoff"]
+        b_eq = infos_all_coal_one_config[-1]["coalitional_payoff"]
+
         A = [[-1, 0, 0], [0, -1, 0], [0, 0, -1], [-1, -1, 0], [-1, 0, -1], [0, -1, -1]]
         b = []
         for info in infos_all_coal_one_config[:-1]:
-            b.append(info["coalitional_payoff"])
+            b.append(-info["coalitional_payoff"])
+            print(b)
         coefficients_min_y = [0] * (len(A[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, A_ub=A, b_ub=b)
-
         return res['x']
 
     def is_convex(self, coalitions_infos):
@@ -129,10 +130,10 @@ class Game:
 
     def verify_properties(self, all_coal_payoff, coal_payoff, payoffs_vector):
         print("Verifying properties of payoffs \n")
-        if cp.is_an_imputation(-coal_payoff, payoffs_vector):
-            print("Core is an imputation (efficiency + individual rationality)!\n")
+        if cp.is_an_imputation(coal_payoff, payoffs_vector):
+            print("The vector is an imputation (efficiency + individual rationality)!\n")
             print("Check if payoff vector is group rational...\n")
-            if cp.is_group_rational(all_coal_payoff, coal_payoff):
+            if cp.is_group_rational(all_coal_payoff, -coal_payoff):
                 print("The payoff vector is group rational!\n")
                 print("The payoff vector is in the core!\n")
                 print("Core verification terminated SUCCESSFULLY!\n")

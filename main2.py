@@ -51,7 +51,6 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
                 resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = -sol['fun']
-            print("Payoff: ", coal_payoff, "coalition", coalition)
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
@@ -63,16 +62,6 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             all_coal_payoffs.append(coal_payoff)
             if coalition == grand_coalition:
                 grand_coal_payoff = coal_payoff
-
-        # we get the entire core
-        payoff_vector = game.calculate_core(infos_all_coal_one_config)
-        # Further verification of the solution (payoff vector) in the core
-        check_first = game.verify_properties(all_coal_payoffs, grand_coal_payoff, payoff_vector)
-
-        if check_first:
-            print("Coalition net incomes:", -grand_coal_payoff)
-            print("Capacity:", sol['x'][-1], "\n")
-        all_infos.append(infos_all_coal_one_config)
 
     # choosing info of all coalition for the best config
 
@@ -87,8 +76,19 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
 
     else:
         print("The game is not convex!\n")
+        # we get the entire core
+        payoff_vector = game.calculate_core(infos_all_coal_one_config)
         print("A solution in the core (not fair) is the result \n"
               "of the system of inequalities:", payoff_vector, "\n")
+
+    # Further verification of the solution (payoff vector) in the core
+    check_core = game.verify_properties(all_coal_payoffs, grand_coal_payoff, payoff_vector)
+
+    if check_core:
+        print("Coalition net incomes:", grand_coal_payoff)
+        print("Capacity:", sol['x'][-1], "\n")
+    all_infos.append(infos_all_coal_one_config)
+
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")

@@ -7,7 +7,7 @@ import time
 # by default player 0 is the NO
 # Players number is mandatory
 def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
-         beta=0.5, chi=0, alpha=0.5, HC=100000000):
+         beta=0.5, chi=-0.9, alpha=0.5, HC=100000000):
     start = time.process_time()
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2

@@ -93,19 +93,21 @@ class Game:
         tmp = np.zeros(shape=(players_numb * T_horizon, players_numb))
         mega_row_A3 = np.concatenate((zeros, identity, tmp, zeros_column), axis=1)
 
-        tmp0 = np.zeros(shape=(2, 2 * players_numb * T_horizon))
+        tmp0 = np.zeros(shape=(1, 2 * players_numb * T_horizon))
+        tmp1 = np.zeros(shape=(1, players_numb))
+        mega_row_A4 = np.concatenate((tmp0, tmp1, [[-1]]), axis=1)
+
         tmp1 = np.ones(shape=(1, players_numb))
-        tmp2 = np.zeros(shape=(1, players_numb))
-        tmp1 = np.concatenate((tmp1, tmp2), axis=0)
-        tmp2 = np.transpose(np.matrix([[-1, 1]]))
-        mega_row_A4 = np.concatenate((tmp0, tmp1, tmp2), axis=1)
+        A_eq = np.concatenate((tmp0, tmp1, [[-1]]), axis=1)
+        b_eq = [[0]]
 
         A = np.concatenate((mega_row_A0, mega_row_A1, mega_row_A2, mega_row_A3, mega_row_A4), axis=0)
+
         tmp0 = np.zeros(shape=(players_numb * T_horizon))
-        b = np.concatenate((b, tmp0, b, tmp0, [0, HC]), axis=0)
+        b = np.concatenate((b, tmp0, b, tmp0, [HC]), axis=0)
         # for A_ub and b_ub I change the sign to reduce the matrices in the desired form
-        bounds = ((0, None),) * (2 * players_numb * T_horizon + players_numb + 1)
-        params = (c, A, b, bounds, T_horizon)
+        bounds = ((0, None),) * (4 * players_numb * T_horizon + players_numb + 1)
+        params = (c, A, b, A_eq, b_eq, bounds, T_horizon)
         sol = core.find_core(params)
 
         return sol
@@ -177,7 +179,7 @@ class Game:
         tmp2 = np.zeros(shape=(players_numb))
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
         A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0], [0, 0, 0, 1, 1, 1]]
-        b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w[:15], beta_vec), p_cpu*w[-1]]
+        b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w[:15], beta_vec), p_cpu * w[-1]]
 
         coefficients_min_y = [0] * (len(A_eq[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq)

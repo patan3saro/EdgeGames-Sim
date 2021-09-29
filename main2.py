@@ -50,8 +50,8 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
                 PIPPO = sol['x'][-1] * p_cpu
                 resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
-            coal_payoff = sol['fun']
-            print("Payoff: ", -coal_payoff, "coalition", coalition)
+            coal_payoff = -sol['fun']
+            print("Payoff: ", coal_payoff, "coalition", coalition)
             info_dict = {"configuration": {
                 "cpu_price_mCore": configuration,
                 "horizon": horizon
@@ -79,7 +79,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     print("Checking if the game is convex...\n")
     if game.is_convex(infos_all_coal_one_config):
         print("The game is convex!\n")
-        payoff_vector = game.shapley_value_payoffs(best_of_the_best_coal, infos_all_coal_one_config,
+        payoff_vector = game.shapley_value_payoffs(infos_all_coal_one_config,
                                                    players_number,
                                                    coalitions)
 

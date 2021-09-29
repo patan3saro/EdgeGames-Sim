@@ -146,11 +146,9 @@ class Game:
             print("Core verification terminated unsuccessfully!\n")
         return False
 
-    def shapley_value_payoffs(self, best_coalition, infos_all_coal_one_config, players_number, coalitions, game_type):
-        coalition_players_number = len(best_coalition)
+    def shapley_value_payoffs(self, infos_all_coal_one_config, players_number, coalitions):
         x_payoffs = []
         N_factorial = math.factorial(players_number)
-
         for player in coalitions[-1]:
             coalitions_dict_without_i = []
             coalitions_dict_with_i = []

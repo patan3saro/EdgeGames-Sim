@@ -6,7 +6,7 @@ import time
 
 # by default player 0 is the NO
 # Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
+def main(players_number=5, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
          beta=0.5, chi=-0.9, alpha=0.5, HC=100000000):
     start = time.process_time()
     game = Game()
@@ -32,7 +32,6 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     best_of_the_best_coal = {}
     all_infos = []
     payoff_vector = []
-    PIPPO = 0
 
     game_type = ("first", "second")
     for configuration in configurations:
@@ -92,7 +91,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     print("Each player pay:\n")
 
     print("Proceeding with calculation of revenues vector and payments\n")
-    res = game.how_much_rev_paym(payoff_vector, sol['x'], 0)
+    res = game.how_much_rev_paym(payoff_vector, sol['x'])
     print("Revenue array:", res[0], "\n")
     print("Payment array:", res[1], "\n")
     if abs(PIPPO - sum(res[1])) > 0.001:

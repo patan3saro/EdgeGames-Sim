@@ -170,19 +170,28 @@ class Game:
 
         return x_payoffs
 
-    def how_much_rev_paym(self, payoff_vector, w, capacity):
+    def how_much_rev_paym(self, payoff_vector, w):
         p_cpu, T_horizon, _, _, beta, players_numb, chi, _, _ = self.get_params()
         # Creating c vector
         tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
         tmp1 = -chi * np.ones(shape=(players_numb * T_horizon))
         tmp2 = np.zeros(shape=(players_numb))
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
-        A_eq = [[1, 0, 0, -1, 0, 0], [0, 1, 0, 0, -1, 0], [0, 0, 1, 0, 0, -1], [1, 1, 1, 0, 0, 0], [0, 0, 0, 1, 1, 1]]
-        b_eq = [payoff_vector[0], payoff_vector[1], payoff_vector[2], np.matmul(w[:15], beta_vec), p_cpu * w[-1]]
-
+        # building A matrix
+        identity = np.identity(players_numb)
+        tmp0 = np.concatenate((identity, -identity), axis=1)
+        ones = np.ones(shape=(1, players_numb))
+        zeros = np.zeros(shape=(1, players_numb))
+        tmp1 = np.concatenate((ones, zeros), axis=1)
+        A_eq = np.concatenate((tmp0, tmp1), axis=0)
+        # building b vector
+        b_eq = np.zeros(shape=(players_numb + 1))
+        for i in range(players_numb):
+            b_eq[i] = payoff_vector[i]
+        b_eq[-1] = np.matmul(w[:len(beta_vec)], beta_vec)
         coefficients_min_y = [0] * (len(A_eq[0]))
-        res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq)
-        return res['x'][0:3], res['x'][3:]
+        res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, options={'rr_method': 'pivot'})
+        return res['x'][0:players_numb], res['x'][players_numb:]
 
     # GETTERS AND SETTERS
     # to get parameters p_cpu, T_horizon, coalition, players_number

@@ -16,6 +16,7 @@ class Game:
         return tmp
 
     def _player_utility_t(self, player_type):
+        self.get_params()
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
@@ -25,7 +26,7 @@ class Game:
             # e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
             eta = 2000
-            sigma = 80
+            sigma = eta/4
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
@@ -36,7 +37,7 @@ class Game:
             # e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
             eta = 150
-            sigma = 50
+            sigma = eta/4
             load = self._generate_load(eta, sigma)
         # benefit factor dollars per mCore per minute
         # see: https://edge.network/en/pricing/
@@ -47,7 +48,7 @@ class Game:
     def calculate_coal_payoff(self):
         p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC = self.get_params()
         # matrix with all the b for each player
-        b = [0] * (players_numb * T_horizon)
+        b = np.zeros(shape=players_numb * T_horizon)
         # if the network operator is not in the coalition or It is alone etc...
         if (0, 'NO') not in coalition or ((0, 'NO'),) == coalition or (len(coalition) == 0) or (len(coalition) == 1):
             pass
@@ -70,8 +71,8 @@ class Game:
         # we use a minimize-function, so to maximize we minimize the opposite
         # Creating c vector
         tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
-        tmp1 = -chi * np.ones(shape=(players_numb * T_horizon))
-        tmp2 = np.zeros(shape=(players_numb))
+        tmp1 = chi * np.ones(shape=(players_numb * T_horizon))
+        tmp2 = np.zeros(shape=players_numb)
         c = np.concatenate((tmp0, tmp1, tmp2, [-p_cpu]), axis=0)
         # Creating A matrix
         identity = np.identity(players_numb * T_horizon)
@@ -88,10 +89,10 @@ class Game:
 
         mega_row_A1 = np.concatenate((identity, zeros, tmp0, zeros_column), axis=1)
 
-        mega_row_A2 = np.concatenate((zeros, identity, -tmp0, zeros_column), axis=1)
+        mega_row_A2 = np.concatenate((zeros, identity, tmp0, zeros_column), axis=1)
 
         tmp = np.zeros(shape=(players_numb * T_horizon, players_numb))
-        mega_row_A3 = np.concatenate((zeros, identity, tmp, zeros_column), axis=1)
+        mega_row_A3 = np.concatenate((zeros, identity, -tmp, zeros_column), axis=1)
 
         tmp0 = np.zeros(shape=(1, 2 * players_numb * T_horizon))
         tmp1 = np.zeros(shape=(1, players_numb))
@@ -113,14 +114,24 @@ class Game:
         return sol
 
     def calculate_core(self, infos_all_coal_one_config):
-        A_eq = [[1, 1, 1]]
+        players_numb = self.get_params()[5]
+        A_eq = np.ones(shape=players_numb)
         b_eq = infos_all_coal_one_config[-1]["coalitional_payoff"]
 
+        for i in range(len(infos_all_coal_one_config)-1):
+            tmp0 = [0] * players_numb
+            for pl in infos_all_coal_one_config[i]["coalition"]:
+                tmp0[pl[0]] = -1
+            if i == 0:
+                tmp = tmp0
+            else:
+                tmp = np.concatenate((tmp, tmp0))
         A = [[-1, 0, 0], [0, -1, 0], [0, 0, -1], [-1, -1, 0], [-1, 0, -1], [0, -1, -1]]
         b = []
+
         for info in infos_all_coal_one_config[:-1]:
             b.append(-info["coalitional_payoff"])
-            print(b)
+
         coefficients_min_y = [0] * (len(A[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, A_ub=A, b_ub=b)
         return res['x']
@@ -174,8 +185,8 @@ class Game:
         p_cpu, T_horizon, _, _, beta, players_numb, chi, _, _ = self.get_params()
         # Creating c vector
         tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
-        tmp1 = -chi * np.ones(shape=(players_numb * T_horizon))
-        tmp2 = np.zeros(shape=(players_numb))
+        tmp1 = chi * np.ones(shape=(players_numb * T_horizon))
+        tmp2 = np.zeros(shape=players_numb)
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
         # building A matrix
         identity = np.identity(players_numb)

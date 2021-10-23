@@ -1,3 +1,4 @@
+import numpy as np
 from game import Game
 import utils
 import os, psutil
@@ -7,26 +8,26 @@ import matplotlib.pyplot as plt
 
 # by default player 0 is the NO
 # Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="min",
+def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4*365, type_slot_t="min",
          beta=0.5, chi=0, alpha=0.5, HC=100000000, gamma=10, eta=1000 * 15,
-         heterogeneity_betas=False, heterogeneity_gammas=False, heterogeneity_etas=False, debug_convexity=False):
+         heterogeneity_betas=False, heterogeneity_gammas=False, heterogeneity_etas=False):
     start = time.time()
 
     # setto beta per ogni service provider
     if heterogeneity_betas:
-        betas = [beta] * 2
-    else:
         betas = [(8 / 5) * beta, (2 / 5) * beta]
+    else:
+        betas = [beta] * 2
 
     if heterogeneity_gammas:
-        gammas = [gamma] * 2
-    else:
         gammas = [(8 / 5) * gamma, (2 / 5) * gamma]
+    else:
+        gammas = [gamma] * 2
 
     if heterogeneity_etas:
-        loads = [eta] * 2
-    else:
         loads = [(8 / 5) * eta, (2 / 5) * eta]
+    else:
+        loads = [eta] * 2
 
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -41,7 +42,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
     else:
         configurations = [p_cpu]
     if type_slot_t == "min":
-        T_horizon = horizon * 96  # 525600
+        T_horizon = 96
     elif type_slot_t == "sec":
         T_horizon = horizon * 3.154e+7
     else:
@@ -73,7 +74,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
             # preparing parameters to calculate payoff
             params = (
                 p_cpu, T_horizon, coalition, len(coalition), beta, players_number, chi, alpha, HC, betas,
-                gammas, loads)
+                gammas, loads, horizon)
             game.set_params(params)
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
@@ -129,8 +130,8 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
 
         print("Revenue array:", res[0], "\n")
         print("Payment array:", res[1], "\n")
-        if abs(PIPPO - sum(res[1])) > 0.001:
-            print("ERROR: the sum of single payments (for each players) doesn't match the  ")
+        if abs(PIPPO - sum(res[1])) > 0.01:
+            print("ERROR: the sum of single payments (for each players) doesn't match the  ", PIPPO , sum(res[1]))
         else:
             print("Total payment and sum of single payments are equal!\n")
 
@@ -138,40 +139,40 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=1, type_slot_t="
         print("Time required for the simulation: ", round(time.time() - start), "seconds")
         # print capacity and p_cpu
     plt.figure()
-    plt.plot(configurations, y_axis_cpu_capacity)
-    plt.xlabel('Cpu\'s Price ($/milliCore)')
+    plt.plot(np.array(configurations)/beta, y_axis_cpu_capacity)
+    plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Cpu\'s Capacity (milliCore)')
     plt.draw()
 
     plt.figure()
-    plt.plot(configurations, y_coal_payoff)
-    plt.xlabel('Cpu\'s Price ($/milliCore)')
+    plt.plot(np.array(configurations)/beta, y_coal_payoff)
+    plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Coalitional payoff ($)')
     plt.draw()
 
     plt.figure()
-    plt.plot(configurations, y_axis_px_NO, color="blue", label="net benefit")
-    plt.plot(configurations, y_axis_pr_NO, color="red", label="gross benefit")
-    plt.plot(configurations, y_axis_pp_NO, color="orange", label="payment")
-    plt.xlabel('Cpu\'s Price ($/milliCore)')
+    plt.plot(np.array(configurations)/beta, y_axis_px_NO, color="blue", label="net benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pr_NO, color="red", label="gross benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pp_NO, color="orange", label="payment")
+    plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff NO ($)')
     plt.legend()
     plt.draw()
 
     plt.figure()
-    plt.plot(configurations, y_axis_px_SP1, color="blue", label="net benefit")
-    plt.plot(configurations, y_axis_pr_SP1, color="red", label="gross benefit")
-    plt.plot(configurations, y_axis_pp_SP1, color="orange", label="payment")
-    plt.xlabel('Cpu\'s Price ($/milliCore)')
+    plt.plot(np.array(configurations)/beta, y_axis_px_SP1, color="blue", label="net benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pr_SP1, color="red", label="gross benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pp_SP1, color="orange", label="payment")
+    plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff SP1 rt ($)')
     plt.legend()
     plt.draw()
 
     plt.figure()
-    plt.plot(configurations, y_axis_px_SP2, color="blue", label="net benefit")
-    plt.plot(configurations, y_axis_pr_SP2, color="red", label="gross benefit")
-    plt.plot(configurations, y_axis_pp_SP2, color="orange", label="payment")
-    plt.xlabel('Cpu\'s Price ($/milliCore)')
+    plt.plot(np.array(configurations)/beta, y_axis_px_SP2, color="blue", label="net benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pr_SP2, color="red", label="gross benefit")
+    plt.plot(np.array(configurations)/beta, y_axis_pp_SP2, color="orange", label="payment")
+    plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff SP2 nrt ($)')
     plt.legend()
     plt.draw()

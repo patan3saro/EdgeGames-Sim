@@ -16,28 +16,28 @@ class Game:
         return tmp
 
     def _player_utility_t(self, player_type):
-        self.get_params()
+        _, _, _, _, _, _, _, _, _, betas, gammas, loads,_ = self.get_params()
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
-            conversion_factor = 20
+            conversion_factor = gammas[0]
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.2
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 2000
-            sigma = eta/4
+            eta = loads[0]
+            sigma = eta / 4
             load = self._generate_load(eta, sigma)
         # if not real time SP, e.g. Netflix
         else:
             # used to convert load in mCore
-            conversion_factor = 5
+            conversion_factor = gammas[1]
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.1
             # eta and sigma must be positive and eta >= sigma/2
-            eta = 150
-            sigma = eta/4
+            eta = loads[1]
+            sigma = eta / 4
             load = self._generate_load(eta, sigma)
         # benefit factor dollars per mCore per minute
         # see: https://edge.network/en/pricing/
@@ -46,7 +46,7 @@ class Game:
         return converted_load
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC = self.get_params()
+        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
         # matrix with all the b for each player
         b = np.zeros(shape=players_numb * T_horizon)
         # if the network operator is not in the coalition or It is alone etc...
@@ -70,8 +70,9 @@ class Game:
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         # Creating c vector
-        tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
-        tmp1 = chi * np.ones(shape=(players_numb * T_horizon))
+        tmp0 = expiration * np.concatenate((np.zeros(shape=T_horizon), betas[0] * np.ones(shape=T_horizon),
+                                            betas[1] * np.ones(shape=T_horizon)))
+        tmp1 = expiration * chi * np.ones(shape=(players_numb * T_horizon))
         tmp2 = np.zeros(shape=players_numb)
         c = np.concatenate((tmp0, tmp1, tmp2, [-p_cpu]), axis=0)
         # Creating A matrix
@@ -118,7 +119,7 @@ class Game:
         A_eq = np.ones(shape=players_numb)
         b_eq = infos_all_coal_one_config[-1]["coalitional_payoff"]
 
-        for i in range(len(infos_all_coal_one_config)-1):
+        for i in range(len(infos_all_coal_one_config) - 1):
             tmp0 = [0] * players_numb
             for pl in infos_all_coal_one_config[i]["coalition"]:
                 tmp0[pl[0]] = -1
@@ -182,10 +183,11 @@ class Game:
         return x_payoffs
 
     def how_much_rev_paym(self, payoff_vector, w):
-        p_cpu, T_horizon, _, _, beta, players_numb, chi, _, _ = self.get_params()
+        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
         # Creating c vector
-        tmp0 = beta * np.ones(shape=(players_numb * T_horizon))
-        tmp1 = chi * np.ones(shape=(players_numb * T_horizon))
+        tmp0 = expiration * np.concatenate((np.zeros(shape=T_horizon), betas[0] * np.ones(shape=T_horizon),
+                               betas[1] * np.ones(shape=T_horizon)))
+        tmp1 = expiration * chi * np.ones(shape=(players_numb * T_horizon))
         tmp2 = np.zeros(shape=players_numb)
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
         # building A matrix
@@ -211,9 +213,3 @@ class Game:
 
     def set_params(self, params):
         self.params = params
-
-    def get_coal_payoff_second_game(self):
-        return self.coal_payoff_second_game
-
-    def set_coal_payoff_second_game(self, payoff):
-        self.coal_payoff_second_game = payoff

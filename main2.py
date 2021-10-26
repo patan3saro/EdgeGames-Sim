@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 
 # by default player 0 is the NO
 # Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4*365, type_slot_t="min",
+def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_slot_t="min",
          beta=0.5, chi=0, alpha=0.5, HC=100000000, gamma=10, eta=1000 * 15,
-         heterogeneity_betas=False, heterogeneity_gammas=False, heterogeneity_etas=False):
+         heterogeneity_betas=True, heterogeneity_gammas=False, heterogeneity_etas=False):
     start = time.time()
 
     # setto beta per ogni service provider
@@ -79,7 +79,6 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4*365, type_slot
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
             if coalition == coalitions[-1]:
-                PIPPO = sol['x'][-1] * p_cpu
                 resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = -sol['fun']
@@ -127,11 +126,11 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4*365, type_slot
         y_axis_pp_NO.append(res[1][0])
         y_axis_pp_SP1.append(res[1][1])
         y_axis_pp_SP2.append(res[1][2])
-
+        PIPPO = p_cpu * sol['x'][-1]
         print("Revenue array:", res[0], "\n")
         print("Payment array:", res[1], "\n")
         if abs(PIPPO - sum(res[1])) > 0.01:
-            print("ERROR: the sum of single payments (for each players) doesn't match the  ", PIPPO , sum(res[1]))
+            print("ERROR: the sum of single payments (for each players) doesn't match the ", PIPPO, sum(res[1]))
         else:
             print("Total payment and sum of single payments are equal!\n")
 
@@ -139,39 +138,39 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4*365, type_slot
         print("Time required for the simulation: ", round(time.time() - start), "seconds")
         # print capacity and p_cpu
     plt.figure()
-    plt.plot(np.array(configurations)/beta, y_axis_cpu_capacity)
+    plt.plot(np.array(configurations) / beta, y_axis_cpu_capacity)
     plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Cpu\'s Capacity (milliCore)')
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations)/beta, y_coal_payoff)
+    plt.plot(np.array(configurations) / beta, y_coal_payoff)
     plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Coalitional payoff ($)')
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations)/beta, y_axis_px_NO, color="blue", label="net benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pr_NO, color="red", label="gross benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pp_NO, color="orange", label="payment")
+    plt.plot(np.array(configurations) / beta, y_axis_px_NO, color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pr_NO, color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pp_NO, color="orange", label="payment")
     plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff NO ($)')
     plt.legend()
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations)/beta, y_axis_px_SP1, color="blue", label="net benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pr_SP1, color="red", label="gross benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pp_SP1, color="orange", label="payment")
+    plt.plot(np.array(configurations) / beta, y_axis_px_SP1, color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pr_SP1, color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pp_SP1, color="orange", label="payment")
     plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff SP1 rt ($)')
     plt.legend()
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations)/beta, y_axis_px_SP2, color="blue", label="net benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pr_SP2, color="red", label="gross benefit")
-    plt.plot(np.array(configurations)/beta, y_axis_pp_SP2, color="orange", label="payment")
+    plt.plot(np.array(configurations) / beta, y_axis_px_SP2, color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pr_SP2, color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / beta, y_axis_pp_SP2, color="orange", label="payment")
     plt.xlabel('P_Cpu/Beta (adimensional)')
     plt.ylabel('Payoff SP2 nrt ($)')
     plt.legend()

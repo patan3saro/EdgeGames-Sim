@@ -12,11 +12,11 @@ class Game:
     def _generate_load(self, eta, sigma):
         np.random.seed(100)
         # WARNING: randomness generates problems with the optimization
-        tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
+        tmp = np.random.randint(eta - sigma, eta + sigma)
         return tmp
 
     def _player_utility_t(self, player_type):
-        _, _, _, _, _, _, _, _, _, betas, gammas, loads,_ = self.get_params()
+        _, _, _, _, _, _, _, _, _, betas, gammas, loads, _ = self.get_params()
         # if a real time SP, e.g. Peugeot
         if player_type == "rt":
             # used to convert load in mCore
@@ -24,7 +24,9 @@ class Game:
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.2
-            # eta and sigma must be positive and eta >= sigma/2
+            # eta and sigma must be positive and e
+            #
+            # ta >= sigma/2
             eta = loads[0]
             sigma = eta / 4
             load = self._generate_load(eta, sigma)
@@ -186,7 +188,7 @@ class Game:
         p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
         # Creating c vector
         tmp0 = expiration * np.concatenate((np.zeros(shape=T_horizon), betas[0] * np.ones(shape=T_horizon),
-                               betas[1] * np.ones(shape=T_horizon)))
+                                            betas[1] * np.ones(shape=T_horizon)))
         tmp1 = expiration * chi * np.ones(shape=(players_numb * T_horizon))
         tmp2 = np.zeros(shape=players_numb)
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
@@ -204,6 +206,7 @@ class Game:
         b_eq[-1] = np.matmul(w[:len(beta_vec)], beta_vec)
         coefficients_min_y = [0] * (len(A_eq[0]))
         res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, options={'rr_method': 'pivot'})
+
         return res['x'][0:players_numb], res['x'][players_numb:]
 
     # GETTERS AND SETTERS

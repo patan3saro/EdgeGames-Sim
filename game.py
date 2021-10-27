@@ -12,7 +12,7 @@ class Game:
     def _generate_load(self, eta, sigma):
         np.random.seed(100)
         # WARNING: randomness generates problems with the optimization
-        tmp = np.random.randint(eta - sigma, eta + sigma)
+        tmp = np.random.randint(eta - sigma / 2, eta + sigma / 2)
         return tmp
 
     def _player_utility_t(self, player_type):
@@ -24,9 +24,7 @@ class Game:
             # we must generate a load that is comparable
             # with the curve of the load benefit _g
             # e.g. choose eta=height_of_g/1.2
-            # eta and sigma must be positive and e
-            #
-            # ta >= sigma/2
+            # eta and sigma must be positive and eta >= sigma/2
             eta = loads[0]
             sigma = eta / 4
             load = self._generate_load(eta, sigma)
@@ -68,7 +66,6 @@ class Game:
                 # we divide by 2 the used resources because we need to split the payoff in a non fair way adding a
                 # false use of resources by the NO in order to pay the NO for his presence, in fact the cpu exists
                 # thanks to him
-
         # cost vector with benefit factor and cpu price
         # we use a minimize-function, so to maximize we minimize the opposite
         # Creating c vector
@@ -187,8 +184,8 @@ class Game:
     def how_much_rev_paym(self, payoff_vector, w):
         p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
         # Creating c vector
-        tmp0 = expiration * np.concatenate((np.zeros(shape=T_horizon), betas[0] * np.ones(shape=T_horizon),
-                                            betas[1] * np.ones(shape=T_horizon)))
+        tmp0 = expiration * np.concatenate(
+            (np.zeros(shape=T_horizon), betas[0] * np.ones(shape=T_horizon), betas[1] * np.ones(shape=T_horizon)))
         tmp1 = expiration * chi * np.ones(shape=(players_numb * T_horizon))
         tmp2 = np.zeros(shape=players_numb)
         beta_vec = np.concatenate((tmp0, tmp1, tmp2), axis=0)
@@ -198,15 +195,20 @@ class Game:
         ones = np.ones(shape=(1, players_numb))
         zeros = np.zeros(shape=(1, players_numb))
         tmp1 = np.concatenate((ones, zeros), axis=1)
-        A_eq = np.concatenate((tmp0, tmp1), axis=0)
+        zeros = np.zeros(shape=(players_numb-1, players_numb+1))
+        identity = np.identity(players_numb - 1)
+        tmp2 = np.concatenate((identity, zeros), axis=1)
+        A_eq = np.concatenate((tmp0, tmp1, tmp2), axis=0)
+        print(A_eq)
         # building b vector
         b_eq = np.zeros(shape=(players_numb + 1))
+        tmp0 = (np.array(payoff_vector[:-1])/(sum(payoff_vector)+0.000001))*(sum(payoff_vector)+p_cpu*w[-1])
         for i in range(players_numb):
             b_eq[i] = payoff_vector[i]
         b_eq[-1] = np.matmul(w[:len(beta_vec)], beta_vec)
         coefficients_min_y = [0] * (len(A_eq[0]))
-        res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, options={'rr_method': 'pivot'})
-
+        b_eq = np.concatenate((np.array(b_eq), tmp0), axis=0)
+        res = linprog(coefficients_min_y, A_eq=A_eq, b_eq=b_eq, method="simplex")
         return res['x'][0:players_numb], res['x'][players_numb:]
 
     # GETTERS AND SETTERS

@@ -1,33 +1,31 @@
 import numpy as np
+
 from game import Game
 import utils
 import os, psutil
 import time
 import matplotlib.pyplot as plt
 
+years = 4
+
 
 # by default player 0 is the NO
 # Players number is mandatory
-def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_slot_t="min",
+def main(players_number=3, rt_players=None, p_cpu=1.5, horizon=years * 365, type_slot_t="min",
          beta=0.5, chi=0, alpha=0.5, HC=100000000, gamma=10, eta=1000 * 15,
-         heterogeneity_betas=True, heterogeneity_gammas=False, heterogeneity_etas=False):
+         heterogeneity_betas=False, heterogeneity_gammas=False, heterogeneity_etas=False):
     start = time.time()
 
-    # setto beta per ogni service provider
-    if heterogeneity_betas:
-        betas = [(8 / 5) * beta, (2 / 5) * beta]
-    else:
-        betas = [beta] * 2
 
     if heterogeneity_gammas:
-        gammas = [(8 / 5) * gamma, (2 / 5) * gamma]
-    else:
         gammas = [gamma] * 2
+    else:
+        gammas = [(8 / 5) * gamma, (2 / 5) * gamma]
 
     if heterogeneity_etas:
-        loads = [(8 / 5) * eta, (2 / 5) * eta]
-    else:
         loads = [eta] * 2
+    else:
+        loads = [(8 / 5) * eta, (2 / 5) * eta]
 
     game = Game()
     # feasible permutation are 2^(N-1)-1 instead of 2
@@ -42,7 +40,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_sl
     else:
         configurations = [p_cpu]
     if type_slot_t == "min":
-        T_horizon = 96
+        T_horizon = 96  # 525600
     elif type_slot_t == "sec":
         T_horizon = horizon * 3.154e+7
     else:
@@ -52,7 +50,8 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_sl
     best_of_the_best_coal = {}
     all_infos = []
     payoff_vector = []
-    configurations = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.5]
+    beta_centr = p_cpu / (horizon * 96)  # are the time slots
+    configurations = [beta_centr, 2*beta_centr, 4*beta_centr, 8*beta_centr]
     y_axis_cpu_capacity = []
     y_axis_px_NO = []
     y_axis_pr_NO = []
@@ -65,10 +64,17 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_sl
     y_axis_pp_SP2 = []
     y_coal_payoff = []
 
+
+
     for configuration in configurations:
         infos_all_coal_one_config = []
         all_coal_payoffs = []
-        p_cpu = configuration
+        beta = configuration
+        # setto beta per ogni service provider
+        if heterogeneity_betas:
+            betas = [beta] * 2
+        else:
+            betas = [(8 / 5) * beta, (2 / 5) * beta]
         # we exclude the empty coalition
         for coalition in coalitions[1:]:
             # preparing parameters to calculate payoff
@@ -79,6 +85,7 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_sl
             # total payoff is the result of the maximization of the v(S)
             sol = game.calculate_coal_payoff()
             if coalition == coalitions[-1]:
+                PIPPO = sol['x'][-1] * p_cpu
                 resources_alloc = sol['x']
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = -sol['fun']
@@ -126,11 +133,11 @@ def main(players_number=3, rt_players=None, p_cpu=0.05, horizon=4 * 365, type_sl
         y_axis_pp_NO.append(res[1][0])
         y_axis_pp_SP1.append(res[1][1])
         y_axis_pp_SP2.append(res[1][2])
-        PIPPO = p_cpu * sol['x'][-1]
+
         print("Revenue array:", res[0], "\n")
         print("Payment array:", res[1], "\n")
-        if abs(PIPPO - sum(res[1])) > 0.01:
-            print("ERROR: the sum of single payments (for each players) doesn't match the ", PIPPO, sum(res[1]))
+        if abs(PIPPO - sum(res[1])) > 0.001:
+            print("ERROR: the sum of single payments (for each players) doesn't match the  ")
         else:
             print("Total payment and sum of single payments are equal!\n")
 

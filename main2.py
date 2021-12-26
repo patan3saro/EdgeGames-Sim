@@ -70,7 +70,6 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     # for each value of beta in configurations (benefit factor)
     for configuration in configurations:
         infos_all_coal_one_config = []
-        all_coal_payoffs = []
         beta = configuration
 
         # setting beta for each Service Provider
@@ -91,30 +90,35 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
             sol = game.calculate_coal_payoff()
 
             if coalition == coalitions[-1]:
-                PIPPO = sol['x'][-1] * price_cpu
+                grand_coal_payment_one_config = sol['x'][-1] * price_cpu
                 resources_alloc = sol['x']
             np.random.seed()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = -sol['fun']
-            print(coal_payoff, coalition)
-            info_dict = {"configuration": {
-                "cpu_price_mCore": configuration,
-                "horizon": horizon
-            }, "coalition": coalition,
+
+            info_one_coalition_one_confing = {
+                "beta": configuration,
+                "coalition": coalition,
                 "coalitional_payoff": coal_payoff,
             }
 
-            # keeping the best coalition for a given configuration
-            infos_all_coal_one_config.append(info_dict)
-            all_coal_payoffs.append(coal_payoff)
+            # keeping the payoffs for each coalition to calculate the Shapley value
+            # in fact, we need all the coalitional payoff
+            infos_all_coal_one_config.append(info_one_coalition_one_confing)
+
+            # keeping the grand coalitional payoff to plot how it changes
             if coalition == grand_coalition:
                 grand_coal_payoff = coal_payoff
 
+        # keeping the grand coalitional payoff to plot how it changes
         y_coal_payoff.append(grand_coal_payoff)
-        # choosing info of all coalition for the best config
+
+        # result of the game (payoffs' vector) calculated using Shapley value
         payoff_vector = game.shapley_value_payoffs(infos_all_coal_one_config,
                                                    players_number,
                                                    coalitions)
+
+        # storing of payoff values for each player to plot them
         y_axis_px_NO.append(payoff_vector[0])
         y_axis_px_SP1.append(payoff_vector[1])
         y_axis_px_SP2.append(payoff_vector[2])
@@ -125,34 +129,40 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
             print("Coalition net incomes:", grand_coal_payoff)
             print("Capacity:", sol['x'][-1], "\n")
             print("Resources split", sol['x'][:-1], "\n")
+            # storing amount of cpu for each player
             resources_NO.append(sol['x'][0])
             resources_SP1.append(sol['x'][1])
             resources_SP2.append(sol['x'][2])
+            # storing total cpu capacity
             y_axis_cpu_capacity.append(sol['x'][-1])
-
-        print("Each player pay:\n")
 
         print("Proceeding with calculation of revenues vector and payments\n")
         res = game.how_much_rev_paym(payoff_vector, sol['x'])
-        # res = np.identity(players_number)
+
+        # storing revenues for each player to plot
         y_axis_pr_NO.append(res[0][0])
         y_axis_pr_SP1.append(res[0][1])
         y_axis_pr_SP2.append(res[0][2])
 
+        # storing payments for each player to plot
         y_axis_pp_NO.append(res[1][0])
         y_axis_pp_SP1.append(res[1][1])
         y_axis_pp_SP2.append(res[1][2])
 
-        print("Revenue array:", res[0], "\n")
-        print("Payment array:", res[1], "\n")
-        if abs(PIPPO - sum(res[1])) > 0.001:
-            print("ERROR: the sum of single payments (for each players) doesn't match the  ")
+        print("Revenues array:", res[0], "\n")
+        print("Payments array:", res[1], "\n")
+
+        # checking if the calculation of payments and revenues is correct
+        print("Checking the correctness of the revenues and payments vectors...\n")
+
+        if abs(grand_coal_payment_one_config - sum(res[1])) > 0.001:
+            print("ERROR: the sum of single payments (for each players) don't match the total payment!")
         else:
             print("Total payment and sum of single payments are equal!\n")
 
         print("Total memory used by the process: ", psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2, "MB")
         print("Time required for the simulation: ", round(time.time() - start), "seconds")
-        # print capacity and p_cpu
+
     plt.figure()
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_cpu_capacity, '--bo')
     plt.xlabel('Beta_avg/P_Cpu')

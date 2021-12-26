@@ -53,6 +53,10 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     resources_NO = []
     resources_SP1 = []
     resources_SP2 = []
+    # contribution created from NO, SP1, SP2
+    utility_NO = []
+    utility_SP1 = []
+    utility_SP2 = []
 
     # timeslot is 15 minutes (96 in one day)
     daily_timeslots = 96
@@ -63,7 +67,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     # is the average value of beta used to generate configurations
     beta_centr = price_cpu_ammortized
 
-    configurations = [beta_centr / 5, beta_centr / 4, beta_centr / 3, beta_centr / 2, beta_centr, beta_centr,
+    configurations = [beta_centr / 5, beta_centr / 4, beta_centr / 3, beta_centr / 2, beta_centr,
                       2 * beta_centr, 3 * beta_centr, 4 * beta_centr, 5 * beta_centr, 6 * beta_centr, 7 * beta_centr,
                       8 * beta_centr]
 
@@ -87,24 +91,29 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
             game.set_params(params)
 
             # total payoff is the result of the maximization of the objective function v(S)
-            sol = game.calculate_coal_payoff()
+            sol, utilities = game.calculate_coal_payoff()
 
             if coalition == coalitions[-1]:
                 grand_coal_payment_one_config = sol['x'][-1] * price_cpu
-                resources_alloc = sol['x']
+                total_gross_revenues =horizon* sum(utilities)
+                print(coalition, utilities)
+                # we want to know the contribution just for the grandcoalition
+                utility_NO.append(horizon*utilities[0])
+                utility_SP1.append(horizon*utilities[1])
+                utility_SP2.append(horizon*utilities[2])
+
             np.random.seed()
             # we store payoffs and the values that optimize the total coalition's payoff
             coal_payoff = -sol['fun']
 
-            info_one_coalition_one_confing = {
+            info_one_coalition_one_config = {
                 "beta": configuration,
                 "coalition": coalition,
                 "coalitional_payoff": coal_payoff,
             }
-
             # keeping the payoffs for each coalition to calculate the Shapley value
             # in fact, we need all the coalitional payoff
-            infos_all_coal_one_config.append(info_one_coalition_one_confing)
+            infos_all_coal_one_config.append(info_one_coalition_one_config)
 
             # keeping the grand coalitional payoff to plot how it changes
             if coalition == grand_coalition:
@@ -155,10 +164,10 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
         # checking if the calculation of payments and revenues is correct
         print("Checking the correctness of the revenues and payments vectors...\n")
 
-        if abs(grand_coal_payment_one_config - sum(res[1])) > 0.001:
-            print("ERROR: the sum of single payments (for each players) don't match the total payment!")
+        if abs(grand_coal_payment_one_config - sum(res[1])) > 0.001 or abs(total_gross_revenues - sum(res[0])) > 0.001:
+            print("ERROR: the sum of single payments (for each players) or revenues don't match the total payment/revenues!")
         else:
-            print("Total payment and sum of single payments are equal!\n")
+            print("Total payment and sum of single payments and revenues are correct!\n")
 
         print("Total memory used by the process: ", psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2, "MB")
         print("Time required for the simulation: ", round(time.time() - start), "seconds")
@@ -210,7 +219,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
 
     plt.figure()
     labels = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10',
-              'C11', 'C12', 'C13']
+              'C11', 'C12']
     width = 0.6  # the width of the bars: can also be len(x) sequence
 
     plt.bar(labels, resources_NO, width, label='capacity_NO')
@@ -219,6 +228,20 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
 
     plt.xlabel('beta_avg/price_cpu_ammortized')
     plt.ylabel('Split of capacity (mCore)')
+    plt.legend()
+    plt.draw()
+
+    # contributions of the players to the coalition (generated utilities)
+    plt.figure()
+    labels = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10',
+              'C11', 'C12']
+    width = 0.6  # the width of the bars: can also be len(x) sequence
+
+    plt.bar(labels, utility_NO, width, label='utility_NO')
+    plt.bar(labels, utility_SP1, width, label='utility_SP1', bottom=utility_NO)
+    plt.bar(labels, utility_SP2, width, label='utility_SP2', bottom=utility_SP1)
+    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.ylabel('Utility (total gross revenues)')
     plt.legend()
     plt.draw()
 

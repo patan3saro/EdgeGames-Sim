@@ -6,9 +6,9 @@ from optimization import maximize_payoff
 class Game:
 
     def calculate_coal_payoff(self):
-        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
-        sol = maximize_payoff(p_cpu, T_horizon, coalition, players_numb, HC, betas, loads, expiration)
-        return sol
+        p_cpu, daily_timeslots, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
+        sol, utilities = maximize_payoff(p_cpu, daily_timeslots, coalition, players_numb, HC, betas, loads, expiration)
+        return sol, utilities
 
     def shapley_value_payoffs(self, infos_all_coal_one_config, players_number, coalitions):
         x_payoffs = []
@@ -35,7 +35,7 @@ class Game:
 
     def how_much_rev_paym(self, payoff_vector, w):
 
-        p_cpu, T_horizon, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
+        p_cpu, _, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
 
         def _constraint_split_1(x):
             return sum(x[3:]) - p_cpu * w[-1]
@@ -57,13 +57,16 @@ class Game:
         con3 = {'type': 'eq', 'fun': _constraint_split_3}
         con4 = {'type': 'eq', 'fun': _constraint_split_4}
         cons = [con1, con2, con3, con4]
+
+        # fake objective function just to solve the system of equations
         def obj(x):
-            return 5
+            return 0
+
         res = minimize(obj, x0, method='slsqp', bounds=bnds, constraints=cons)
         return res['x'][0:players_numb], res['x'][players_numb:]
 
     # GETTERS AND SETTERS
-    # to get parameters p_cpu, T_horizon, coalition, players_number
+    # to get parameters p_cpu, horizon, coalition, players_number
     def get_params(self):
         return self.params
 

@@ -165,15 +165,15 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
 
     plt.figure()
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_cpu_capacity, '--bo')
-    plt.xlabel('Beta_avg/P_Cpu')
-    plt.ylabel('Cpu\'s Capacity (milliCore)')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.ylabel('Cpu\'s capacity (milliCore)')
     # plt.xscale('log')
     plt.ylim(ymin=0, ymax=max(y_axis_cpu_capacity) + 5)
     plt.draw()
 
     plt.figure()
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_coal_payoff, '--bo')
-    plt.xlabel('Beta_avg/P_Cpu')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
     plt.ylabel('Coalitional payoff ($)')
     # plt.xscale('log')
     plt.draw()
@@ -182,7 +182,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_NO, '--bo', color="blue", label="net benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_NO, '--bo', color="red", label="gross benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_NO, '--bo', color="orange", label="payment")
-    plt.xlabel('Beta_avg/P_Cpu')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
     plt.ylabel('Payoff NO ($)')
     plt.legend()
     plt.xscale('log')
@@ -192,7 +192,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_SP1, '--bo', color="blue", label="net benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_SP1, '--bo', color="red", label="gross benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_SP1, '--bo', color="orange", label="payment")
-    plt.xlabel('Beta_avg/P_Cpu')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
     plt.ylabel('Payoff SP1 rt ($)')
     plt.legend()
     plt.xscale('log')
@@ -202,22 +202,23 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_SP2, '--bo', color="blue", label="net benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_SP2, '--bo', color="red", label="gross benefit")
     plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_SP2, '--bo', color="orange", label="payment")
-    plt.xlabel('Beta_avg/P_Cpu')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
     plt.ylabel('Payoff SP2 nrt ($)')
     plt.legend()
     plt.draw()
     plt.xscale('log')
 
     plt.figure()
-    labels = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13']
-    width = 0.35  # the width of the bars: can also be len(x) sequence
+    labels = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10',
+              'C11', 'C12', 'C13']
+    width = 0.6  # the width of the bars: can also be len(x) sequence
 
-    plt.bar(labels, resources_NO, width, label='h_NO')
-    plt.bar(labels, resources_SP1, width, label='h_SP1')
-    plt.bar(labels, resources_SP2, width, label='h_SP2')
+    plt.bar(labels, resources_NO, width, label='capacity_NO')
+    plt.bar(labels, resources_SP1, width, label='capacity_SP1', bottom=resources_NO)
+    plt.bar(labels, resources_SP2, width, label='capacity_SP2', bottom=resources_SP1)
 
-    plt.xlabel('Beta_avg/P_Cpu')
-    plt.ylabel('Split of  (mCore)')
+    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.ylabel('Split of capacity (mCore)')
     plt.legend()
     plt.draw()
 
@@ -225,5 +226,4 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
 
 
 if __name__ == '__main__':
-    # players_number=int(input("Insert players' number"))
     main()

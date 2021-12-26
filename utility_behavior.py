@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def _utility_i(beta_i, h_i, load_t, csi=0.06, s=0.5):
+def _utility_i(beta_i, h_i, load_t, csi=0.05, s=0.5):
     # return beta_i * pow(h_i, csi / s) * pow(load_t, csi)
     return beta_i * load_t * (1 - math.exp(-csi * h_i))
 

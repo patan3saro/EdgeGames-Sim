@@ -29,7 +29,7 @@ def _genera_loads(daily_timeslots, avg_load):
     return tmp
 
 
-def _utility_i(beta_i, h_i, load_t, csi=0.8):
+def _utility_i(beta_i, h_i, load_t, csi=0.08):
     return beta_i * load_t * (1 - math.exp(-csi * h_i))
 
 

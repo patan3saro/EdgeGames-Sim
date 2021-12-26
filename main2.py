@@ -61,11 +61,11 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     # timeslot is 15 minutes (96 in one day)
     daily_timeslots = 96
 
-    # price_cpu_ammortized is the price of the CPU for each timeslot
-    price_cpu_ammortized = price_cpu / (horizon * daily_timeslots)
+    # price_cpu_amortized is the price of the CPU for each timeslot
+    price_cpu_amortized = price_cpu / (horizon * daily_timeslots)
 
     # is the average value of beta used to generate configurations
-    beta_centr = price_cpu_ammortized
+    beta_centr = price_cpu_amortized
 
     configurations = [beta_centr / 5, beta_centr / 4, beta_centr / 3, beta_centr / 2, beta_centr,
                       2 * beta_centr, 3 * beta_centr, 4 * beta_centr, 5 * beta_centr, 6 * beta_centr, 7 * beta_centr,
@@ -165,7 +165,8 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
         print("Checking the correctness of the revenues and payments vectors...\n")
 
         if abs(grand_coal_payment_one_config - sum(res[1])) > 0.001 or abs(total_gross_revenues - sum(res[0])) > 0.001:
-            print("ERROR: the sum of single payments (for each players) or revenues don't match the total payment/revenues!")
+            print("ERROR: the sum of single payments (for each players) or revenues don't match the total "
+                  "payment/revenues!")
         else:
             print("Total payment and sum of single payments and revenues are correct!\n")
 
@@ -173,45 +174,45 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
         print("Time required for the simulation: ", round(time.time() - start), "seconds")
 
     plt.figure()
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_cpu_capacity, '--bo')
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_cpu_capacity, '--bo')
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Cpu\'s capacity (milliCore)')
     # plt.xscale('log')
     plt.ylim(ymin=0, ymax=max(y_axis_cpu_capacity) + 5)
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_coal_payoff, '--bo')
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_coal_payoff, '--bo')
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Coalitional payoff ($)')
     # plt.xscale('log')
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_NO, '--bo', color="blue", label="net benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_NO, '--bo', color="red", label="gross benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_NO, '--bo', color="orange", label="payment")
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_px_NO, '--bo', color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pr_NO, '--bo', color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pp_NO, '--bo', color="orange", label="payment")
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Payoff NO ($)')
     plt.legend()
     plt.xscale('log')
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_SP1, '--bo', color="blue", label="net benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_SP1, '--bo', color="red", label="gross benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_SP1, '--bo', color="orange", label="payment")
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_px_SP1, '--bo', color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pr_SP1, '--bo', color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pp_SP1, '--bo', color="orange", label="payment")
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Payoff SP1 rt ($)')
     plt.legend()
     plt.xscale('log')
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_px_SP2, '--bo', color="blue", label="net benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pr_SP2, '--bo', color="red", label="gross benefit")
-    plt.plot(np.array(configurations) / price_cpu_ammortized, y_axis_pp_SP2, '--bo', color="orange", label="payment")
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_px_SP2, '--bo', color="blue", label="net benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pr_SP2, '--bo', color="red", label="gross benefit")
+    plt.plot(np.array(configurations) / price_cpu_amortized, y_axis_pp_SP2, '--bo', color="orange", label="payment")
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Payoff SP2 nrt ($)')
     plt.legend()
     plt.draw()
@@ -226,7 +227,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     plt.bar(labels, resources_SP1, width, label='capacity_SP1', bottom=resources_NO)
     plt.bar(labels, resources_SP2, width, label='capacity_SP2', bottom=resources_SP1)
 
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Split of capacity (mCore)')
     plt.legend()
     plt.draw()
@@ -240,7 +241,7 @@ def main(players_number=3, rt_players=None, price_cpu=1.5, horizon=years * 365, 
     plt.bar(labels, utility_NO, width, label='utility_NO')
     plt.bar(labels, utility_SP1, width, label='utility_SP1', bottom=utility_NO)
     plt.bar(labels, utility_SP2, width, label='utility_SP2', bottom=utility_SP1)
-    plt.xlabel('beta_avg/price_cpu_ammortized')
+    plt.xlabel('beta_avg/price_cpu_amortized')
     plt.ylabel('Utility (total gross revenues)')
     plt.legend()
     plt.draw()

@@ -53,14 +53,14 @@ def _revenues(daily_timeslots, SPs, betas, h_vec, etas):
 
 
 def _objective(x):
-    p_cpu, daily_timeslots, coalition, players_numb, HC, betas, loads, expiration = foo.get_params()
+    p_cpu, daily_timeslots, coalition, players_numb, HC, betas, loads, horizon = foo.get_params()
 
     betas = [0] + betas
     h_vec = x[:-1]
     capacity = x[-1]
     if (0, "NO") in coalition:
         SPs_in_coalition = [l[0] for l in coalition[1:]]
-        tmp = -expiration * _revenues(daily_timeslots, SPs_in_coalition, betas, h_vec, loads) + p_cpu * capacity
+        tmp = -horizon * _revenues(daily_timeslots, SPs_in_coalition, betas, h_vec, loads) + p_cpu * capacity
     else:
         tmp = 0
     return tmp
@@ -70,8 +70,8 @@ def _constraint1(x):
     return sum(x[:-1]) - x[-1]
 
 
-def maximize_payoff(p_cpu, daily_timeslots, coalition, players_numb, HC, betas, avg_loads_all_players, expiration):
-    params = p_cpu, daily_timeslots, coalition, players_numb, HC, betas, avg_loads_all_players, expiration
+def maximize_payoff(p_cpu, daily_timeslots, coalition, players_numb, HC, betas, avg_loads_all_players, horizon):
+    params = p_cpu, daily_timeslots, coalition, players_numb, HC, betas, avg_loads_all_players, horizon
     foo.set_params(params)
     x0 = [1] * (players_numb + 1)
     b = (0, None)

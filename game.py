@@ -6,8 +6,8 @@ from optimization import maximize_payoff
 class Game:
 
     def calculate_coal_payoff(self):
-        p_cpu, daily_timeslots, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
-        sol, utilities = maximize_payoff(p_cpu, daily_timeslots, coalition, players_numb, HC, betas, loads, expiration)
+        p_cpu, daily_timeslots, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, horizon = self.get_params()
+        sol, utilities = maximize_payoff(p_cpu, daily_timeslots, coalition, players_numb, HC, betas, loads, horizon)
         return sol, utilities
 
     def shapley_value_payoffs(self, infos_all_coal_one_config, players_number, coalitions):
@@ -35,7 +35,7 @@ class Game:
 
     def how_much_rev_paym(self, payoff_vector, w):
 
-        p_cpu, _, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, expiration = self.get_params()
+        p_cpu, _, coalition, _, beta, players_numb, chi, alpha, HC, betas, gammas, loads, horizon = self.get_params()
 
         def _constraint_split_1(x):
             return sum(x[3:]) - p_cpu * w[-1]
